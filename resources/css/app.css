@@ -1,0 +1,156 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+/*
+|--------------------------------------------------------------------------
+| Design tokens — single source of truth
+|--------------------------------------------------------------------------
+| Toàn bộ UI dùng thang màu `brand-*` (KHÔNG hardcode emerald/indigo trong
+| view). Muốn đổi nhận diện chỉ cần sửa các token tại đây.
+| brand = Emerald (Inter-Edu). accent = Teal.
+*/
+@theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Brand (Emerald) */
+    --color-brand-50: oklch(0.979 0.021 166.113);
+    --color-brand-100: oklch(0.95 0.052 163.051);
+    --color-brand-200: oklch(0.905 0.093 164.15);
+    --color-brand-300: oklch(0.845 0.143 164.978);
+    --color-brand-400: oklch(0.765 0.177 163.223);
+    --color-brand-500: oklch(0.696 0.17 162.48);
+    --color-brand-600: oklch(0.596 0.145 163.225);
+    --color-brand-700: oklch(0.508 0.118 165.612);
+    --color-brand-800: oklch(0.432 0.095 166.913);
+    --color-brand-900: oklch(0.378 0.077 168.94);
+    --color-brand-950: oklch(0.262 0.051 172.552);
+
+    /* Accent (Teal) — dùng cho điểm nhấn phụ */
+    --color-accent-400: oklch(0.777 0.152 181.912);
+    --color-accent-500: oklch(0.704 0.14 182.503);
+    --color-accent-600: oklch(0.6 0.118 184.704);
+}
+
+/*
+|--------------------------------------------------------------------------
+| Base layer
+|--------------------------------------------------------------------------
+*/
+@layer base {
+    /* Ẩn phần tử cho tới khi Alpine khởi tạo (chống nháy modal/dropdown). */
+    [x-cloak] {
+        display: none !important;
+    }
+
+    html {
+        scroll-behavior: smooth;
+        -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        text-rendering: optimizeLegibility;
+    }
+
+    /* Tailwind v4 bỏ cursor:pointer mặc định cho button — khôi phục lại. */
+    button:not(:disabled),
+    [type='button']:not(:disabled),
+    [type='submit']:not(:disabled),
+    [type='reset']:not(:disabled),
+    [role='button']:not(:disabled),
+    label:has(> input[type='checkbox']),
+    summary {
+        cursor: pointer;
+    }
+
+    /* Scrollbar mảnh, hợp tông trung tính */
+    * {
+        scrollbar-width: thin;
+        scrollbar-color: var(--color-gray-300) transparent;
+    }
+    *::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    *::-webkit-scrollbar-thumb {
+        background-color: var(--color-gray-300);
+        border-radius: 9999px;
+    }
+    *::-webkit-scrollbar-thumb:hover {
+        background-color: var(--color-gray-400);
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
+| Component utilities dùng chung
+|--------------------------------------------------------------------------
+*/
+@layer components {
+    /* Hover lift nhẹ cho card có thể click */
+    .card-hover {
+        transition:
+            box-shadow 0.18s ease,
+            transform 0.18s ease,
+            border-color 0.18s ease;
+    }
+    .card-hover:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-1px);
+    }
+
+    /* Animation xuất hiện cho flash/alert & nội dung */
+    @keyframes fade-in-up {
+        from {
+            opacity: 0;
+            transform: translateY(6px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    .animate-fade-in-up {
+        /* KHÔNG dùng `both`: tránh giữ lại transform tồn dư (translateY(0)) gây
+           "containing block" làm hỏng position:fixed của modal/kéo-thả. */
+        animation: fade-in-up 0.25s ease-out;
+    }
+
+    /* ─────────── Kanban drag & drop (SortableJS) ─────────── */
+    .kanban-card {
+        cursor: grab;
+        transition:
+            box-shadow 0.15s ease,
+            border-color 0.15s ease;
+    }
+    .kanban-card:hover {
+        box-shadow: var(--shadow-md);
+    }
+    .kanban-card:active,
+    .kanban-chosen {
+        cursor: grabbing;
+    }
+
+    /* Khe placeholder nơi thẻ sẽ rơi vào (clone tĩnh trong cột) */
+    .kanban-ghost {
+        background: var(--color-brand-50);
+        border: 2px dashed var(--color-brand-300) !important;
+        box-shadow: none !important;
+    }
+    .kanban-ghost > * {
+        visibility: hidden;
+    }
+
+    /* Bản sao thẻ bay theo con trỏ (SortableJS tự set transform translate3d) */
+    .kanban-drag {
+        cursor: grabbing;
+        opacity: 1 !important;
+        box-shadow: var(--shadow-xl);
+    }
+}

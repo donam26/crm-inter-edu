@@ -1,0 +1,526 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1779995748303,
+  "projectRoot": "/Users/hnam/code/crm-inter-edu",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "PHP",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "composer.json"
+        ]
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "vite",
+        "version": "7.0.7",
+        "category": "build"
+      }
+    ],
+    "packageManager": "composer",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": "npm run build 2>&1 | tail -8",
+    "testCommand": null,
+    "lintCommand": null,
+    "devCommand": "npm run dev",
+    "scripts": {
+      "build": "vite build",
+      "dev": "vite"
+    }
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "app",
+      "public",
+      "tests"
+    ],
+    "gitBranches": null
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "app": {
+      "path": "app",
+      "purpose": "Application code",
+      "fileCount": 0,
+      "lastAccessed": 1779995748228,
+      "keyFiles": []
+    },
+    "bootstrap": {
+      "path": "bootstrap",
+      "purpose": null,
+      "fileCount": 2,
+      "lastAccessed": 1779995748235,
+      "keyFiles": [
+        "app.php",
+        "providers.php"
+      ]
+    },
+    "config": {
+      "path": "config",
+      "purpose": "Configuration files",
+      "fileCount": 11,
+      "lastAccessed": 1779995748268,
+      "keyFiles": [
+        "app.php",
+        "auth.php",
+        "cache.php",
+        "database.php",
+        "filesystems.php"
+      ]
+    },
+    "database": {
+      "path": "database",
+      "purpose": null,
+      "fileCount": 1,
+      "lastAccessed": 1779995748269,
+      "keyFiles": []
+    },
+    "public": {
+      "path": "public",
+      "purpose": "Public files",
+      "fileCount": 4,
+      "lastAccessed": 1779995748274,
+      "keyFiles": [
+        "favicon.ico",
+        "index.php",
+        "robots.txt"
+      ]
+    },
+    "resources": {
+      "path": "resources",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1779995748281,
+      "keyFiles": []
+    },
+    "routes": {
+      "path": "routes",
+      "purpose": "Route handlers",
+      "fileCount": 3,
+      "lastAccessed": 1779995748282,
+      "keyFiles": [
+        "auth.php",
+        "console.php",
+        "web.php"
+      ]
+    },
+    "storage": {
+      "path": "storage",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1779995748282,
+      "keyFiles": []
+    },
+    "tests": {
+      "path": "tests",
+      "purpose": "Test files",
+      "fileCount": 1,
+      "lastAccessed": 1779995748283,
+      "keyFiles": [
+        "TestCase.php"
+      ]
+    },
+    "vendor": {
+      "path": "vendor",
+      "purpose": "Third-party code",
+      "fileCount": 1,
+      "lastAccessed": 1779995748283,
+      "keyFiles": [
+        "autoload.php"
+      ]
+    },
+    "app/Models": {
+      "path": "app/Models",
+      "purpose": "Data models",
+      "fileCount": 12,
+      "lastAccessed": 1779995748285,
+      "keyFiles": [
+        "Activity.php",
+        "Branch.php",
+        "Contact.php"
+      ]
+    },
+    "app/Services": {
+      "path": "app/Services",
+      "purpose": "Business logic services",
+      "fileCount": 13,
+      "lastAccessed": 1779995748298,
+      "keyFiles": [
+        "ActivityService.php",
+        "BranchService.php",
+        "ContactService.php"
+      ]
+    },
+    "database/migrations": {
+      "path": "database/migrations",
+      "purpose": "Database migrations",
+      "fileCount": 16,
+      "lastAccessed": 1779995748299,
+      "keyFiles": [
+        "0001_01_01_000000_create_users_table.php",
+        "0001_01_01_000001_create_cache_table.php",
+        "0001_01_01_000002_create_jobs_table.php"
+      ]
+    },
+    "public/build": {
+      "path": "public/build",
+      "purpose": "Build output",
+      "fileCount": 1,
+      "lastAccessed": 1779995748300,
+      "keyFiles": [
+        "manifest.json"
+      ]
+    },
+    "resources/views": {
+      "path": "resources/views",
+      "purpose": "View templates",
+      "fileCount": 1,
+      "lastAccessed": 1779995748301,
+      "keyFiles": [
+        "welcome.blade.php"
+      ]
+    },
+    "storage/app": {
+      "path": "storage/app",
+      "purpose": "Application code",
+      "fileCount": 1,
+      "lastAccessed": 1779995748302,
+      "keyFiles": []
+    },
+    "vendor/bin": {
+      "path": "vendor/bin",
+      "purpose": "Executable scripts",
+      "fileCount": 9,
+      "lastAccessed": 1779995748303,
+      "keyFiles": [
+        "carbon",
+        "patch-type-declarations",
+        "php-parse"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "resources/views/leads/show.blade.php",
+      "accessCount": 24,
+      "lastAccessed": 1780025464703,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/leads/create.blade.php",
+      "accessCount": 17,
+      "lastAccessed": 1780024269801,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/leads/index.blade.php",
+      "accessCount": 16,
+      "lastAccessed": 1780025463772,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/leads/edit.blade.php",
+      "accessCount": 15,
+      "lastAccessed": 1780024270105,
+      "type": "file"
+    },
+    {
+      "path": "CODING_RULES.md",
+      "accessCount": 15,
+      "lastAccessed": 1780027619686,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/components/input.blade.php",
+      "accessCount": 11,
+      "lastAccessed": 1780022439328,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/deals/show.blade.php",
+      "accessCount": 9,
+      "lastAccessed": 1780024501252,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/components/button.blade.php",
+      "accessCount": 9,
+      "lastAccessed": 1780025027232,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/components/badge.blade.php",
+      "accessCount": 8,
+      "lastAccessed": 1780022440715,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/components/table.blade.php",
+      "accessCount": 8,
+      "lastAccessed": 1780024987950,
+      "type": "file"
+    },
+    {
+      "path": "resources/css/app.css",
+      "accessCount": 8,
+      "lastAccessed": 1780024992818,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/tasks/_kanban_card.blade.php",
+      "accessCount": 8,
+      "lastAccessed": 1780025002347,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/components/icon.blade.php",
+      "accessCount": 8,
+      "lastAccessed": 1780025270494,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/dashboard/index.blade.php",
+      "accessCount": 8,
+      "lastAccessed": 1780025324381,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/components/select.blade.php",
+      "accessCount": 7,
+      "lastAccessed": 1780022438362,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/components/textarea.blade.php",
+      "accessCount": 7,
+      "lastAccessed": 1780022438838,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/events/calendar.blade.php",
+      "accessCount": 7,
+      "lastAccessed": 1780024313263,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/components/card.blade.php",
+      "accessCount": 6,
+      "lastAccessed": 1780022437915,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/components/layouts/app.blade.php",
+      "accessCount": 6,
+      "lastAccessed": 1780023789092,
+      "type": "file"
+    },
+    {
+      "path": "resources/js/app.js",
+      "accessCount": 6,
+      "lastAccessed": 1780024978351,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/tasks/_kanban.blade.php",
+      "accessCount": 6,
+      "lastAccessed": 1780025006566,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/components/sidebar.blade.php",
+      "accessCount": 6,
+      "lastAccessed": 1780025294566,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/users/create.blade.php",
+      "accessCount": 6,
+      "lastAccessed": 1780025583407,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/users/edit.blade.php",
+      "accessCount": 6,
+      "lastAccessed": 1780025592162,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/welcome.blade.php",
+      "accessCount": 5,
+      "lastAccessed": 1780021933761,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/components/topbar.blade.php",
+      "accessCount": 5,
+      "lastAccessed": 1780022006429,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/auth/login.blade.php",
+      "accessCount": 5,
+      "lastAccessed": 1780022361807,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/components/page-header.blade.php",
+      "accessCount": 5,
+      "lastAccessed": 1780022436915,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/components/table/empty.blade.php",
+      "accessCount": 5,
+      "lastAccessed": 1780022442109,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/components/empty-state.blade.php",
+      "accessCount": 5,
+      "lastAccessed": 1780022442180,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/tasks/index.blade.php",
+      "accessCount": 5,
+      "lastAccessed": 1780024253751,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/users/index.blade.php",
+      "accessCount": 5,
+      "lastAccessed": 1780024989113,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/branches/index.blade.php",
+      "accessCount": 5,
+      "lastAccessed": 1780025028263,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/users/show.blade.php",
+      "accessCount": 5,
+      "lastAccessed": 1780025391549,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/components/layouts/guest.blade.php",
+      "accessCount": 4,
+      "lastAccessed": 1780021867682,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/revenues/report.blade.php",
+      "accessCount": 4,
+      "lastAccessed": 1780022687159,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/branches/create.blade.php",
+      "accessCount": 4,
+      "lastAccessed": 1780024230376,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/branches/edit.blade.php",
+      "accessCount": 4,
+      "lastAccessed": 1780024235995,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/contacts/create.blade.php",
+      "accessCount": 4,
+      "lastAccessed": 1780024242032,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/branches/show.blade.php",
+      "accessCount": 4,
+      "lastAccessed": 1780024244925,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/contacts/edit.blade.php",
+      "accessCount": 4,
+      "lastAccessed": 1780024246468,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/contacts/show.blade.php",
+      "accessCount": 4,
+      "lastAccessed": 1780024258848,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/components/alert.blade.php",
+      "accessCount": 3,
+      "lastAccessed": 1780021713096,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/components/modal.blade.php",
+      "accessCount": 3,
+      "lastAccessed": 1780021722642,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/components/stat-card.blade.php",
+      "accessCount": 2,
+      "lastAccessed": 1780022415594,
+      "type": "file"
+    },
+    {
+      "path": "package.json",
+      "accessCount": 1,
+      "lastAccessed": 1779995807281,
+      "type": "file"
+    },
+    {
+      "path": "vite.config.js",
+      "accessCount": 1,
+      "lastAccessed": 1779995816185,
+      "type": "file"
+    },
+    {
+      "path": "README.md",
+      "accessCount": 1,
+      "lastAccessed": 1779995848290,
+      "type": "file"
+    },
+    {
+      "path": "resources/js/bootstrap.js",
+      "accessCount": 1,
+      "lastAccessed": 1779995859764,
+      "type": "file"
+    },
+    {
+      "path": "resources/views/components/nav-link.blade.php",
+      "accessCount": 1,
+      "lastAccessed": 1780021783593,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}

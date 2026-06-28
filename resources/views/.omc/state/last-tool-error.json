@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"cd /Users/hnam/code/crm-inter-edu\\necho \\\"=== PHP LINT all controllers ===\\\"\\nerr=0; for f in app/Http/Controllers/*.php; do php -l \\\"$f\\\" 2>&1 | grep -q \\\"No syntax errors\\\" || { echo \\\"L...",
+  "error": "Exit code 1\n=== PHP LINT all controllers ===\n✓ all controllers OK\n\n=== BLADE COMPILE ===\n   INFO  Blade templates cached successfully.  \n\nexit: 0\n\n=== Modal helper adoption (controllers) ===\nwantsModalForm guards: 13 controllers\nmodalRedirect calls:   25\nvalidationResponse:    12\n\n=== Leftover <a href ...create/edit> (expect 0) ===\n✓ 0\n\n=== create/edit still using x-layouts.app (expect 0) ===\n(eval):17: no matches found: resources/views/*/_form.blade.php",
+  "timestamp": "2026-05-29T03:15:17.863Z",
+  "retry_count": 1
+}
