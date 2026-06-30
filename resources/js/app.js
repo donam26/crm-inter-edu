@@ -111,14 +111,24 @@ const Modal = {
                 if (btn) btn.disabled = false;
                 return;
             }
+            // Phiên hết hạn (401) hoặc CSRF token đã cũ (419) — xảy ra khi server
+            // khởi động lại, DB/bảng sessions bị làm mới, hoặc để form mở quá lâu.
+            // Token trong trang đã cũ nên bấm Lưu lại cũng vô ích → báo rõ và tải
+            // lại trang để lấy token mới (đăng nhập lại nếu cần).
+            if (res.status === 419 || res.status === 401) {
+                alert('Phiên làm việc đã hết hạn. Trang sẽ được tải lại, vui lòng đăng nhập lại nếu cần rồi thử lại.');
+                window.location.reload();
+                return;
+            }
             if (res.ok) {
                 const data = await res.json().catch(() => ({}));
                 window.location = data.redirect || window.location.href;
                 return;
             }
-            throw new Error('submit failed');
+            throw new Error(`submit failed (HTTP ${res.status})`);
         } catch (err) {
             if (btn) btn.disabled = false;
+            console.error('[modal submit]', err);
             alert('Có lỗi xảy ra. Vui lòng thử lại.');
         }
     },

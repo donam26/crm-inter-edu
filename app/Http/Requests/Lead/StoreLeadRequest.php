@@ -18,6 +18,13 @@ class StoreLeadRequest extends FormRequest
     public function rules(): array
     {
         return [
+            // Chỉ bắt buộc khi user không thuộc chi nhánh nào (super-admin);
+            // user có branch sẽ được auto-gán ở service và bỏ qua giá trị này.
+            'branch_id' => [
+                Rule::requiredIf(fn () => $this->user()?->branch_id === null),
+                'integer',
+                'exists:branches,id',
+            ],
             'school_name' => ['required', 'string', 'max:255'],
             'school_level' => ['required', 'string', Rule::in(SchoolLevel::values())],
             'student_size' => ['nullable', 'integer', 'min:0'],

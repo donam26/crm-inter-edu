@@ -66,6 +66,49 @@ class LeadTest extends TestCase
         ]);
     }
 
+    public function test_super_admin_without_branch_creates_lead_by_picking_branch(): void
+    {
+        // Kịch bản thật: super-admin toàn cục (branch_id=null) phải chọn
+        // chi nhánh trong form. Service dùng branch_id đã validate từ request.
+        $branch = Branch::factory()->create();
+        $admin = $this->makeUser('super-admin'); // không gán branch → branch_id null
+
+        $this->assertNull($admin->branch_id);
+
+        $this->actingAs($admin)
+            ->post(route('leads.store'), [
+                'school_name' => 'Trường XYZ',
+                'school_level' => 'thcs',
+                'student_size' => 12,
+                'status' => 'new',
+                'branch_id' => $branch->id,
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('leads', [
+            'school_name' => 'Trường XYZ',
+            'branch_id' => $branch->id,
+        ]);
+    }
+
+    public function test_super_admin_without_branch_must_supply_branch(): void
+    {
+        // Thiếu branch_id → validation lỗi, không tạo lead (chứ không phải 500).
+        $admin = $this->makeUser('super-admin');
+
+        $this->actingAs($admin)
+            ->post(route('leads.store'), [
+                'school_name' => 'Trường No Branch',
+                'school_level' => 'thcs',
+                'status' => 'new',
+            ])
+            ->assertSessionHasErrors('branch_id');
+
+        $this->assertDatabaseMissing('leads', [
+            'school_name' => 'Trường No Branch',
+        ]);
+    }
+
     public function test_super_admin_can_view_any_lead(): void
     {
         $admin = $this->makeUser('super-admin');

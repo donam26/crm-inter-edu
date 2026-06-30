@@ -4,6 +4,14 @@
 
     <x-input name="school_name" label="Tên trường" required />
 
+    @if (($branches ?? collect())->isNotEmpty())
+        <x-select name="branch_id" label="Chi nhánh" placeholder="— Chọn chi nhánh —" required>
+            @foreach ($branches as $b)
+                <option value="{{ $b->id }}" @selected((string) old('branch_id') === (string) $b->id)>{{ $b->name }}</option>
+            @endforeach
+        </x-select>
+    @endif
+
     <x-select name="school_level" label="Cấp học" placeholder="— Chọn cấp học —" required>
         @foreach ($levels as $l)
             <option value="{{ $l->value }}" @selected(old('school_level') === $l->value)>{{ $l->label() }}</option>

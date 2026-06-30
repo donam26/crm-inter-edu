@@ -27,9 +27,12 @@ class LeadService
     public function create(array $data): Lead
     {
         return DB::transaction(function () use ($data) {
-            // Service-layer branch_id injection: luôn lấy từ user đăng nhập,
-            // bỏ qua mọi giá trị branch_id mà client gửi lên.
-            $data['branch_id'] = Auth::user()?->branch_id;
+            // Service-layer branch_id injection: user thuộc chi nhánh nào thì
+            // lead gán chi nhánh đó, bỏ qua mọi branch_id client gửi lên.
+            // Super-admin (không có branch) mới được dùng branch_id đã validate
+            // từ request (StoreLeadRequest đảm bảo tồn tại trong bảng branches).
+            $userBranchId = Auth::user()?->branch_id;
+            $data['branch_id'] = $userBranchId ?? ($data['branch_id'] ?? null);
 
             return Lead::create($data);
         });

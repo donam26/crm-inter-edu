@@ -56,6 +56,10 @@ class LeadController extends Controller
             'statuses' => LeadStatus::cases(),
             'levels' => SchoolLevel::cases(),
             'branchUsers' => $this->branchUsers($request->user()?->branch_id),
+            // Super-admin không thuộc chi nhánh nào → phải tự chọn branch cho lead.
+            'branches' => $request->user()?->hasRole('super-admin')
+                ? Branch::orderBy('name')->get()
+                : collect(),
         ]);
     }
 
