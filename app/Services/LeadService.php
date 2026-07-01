@@ -32,7 +32,11 @@ class LeadService
             // Super-admin (không có branch) mới được dùng branch_id đã validate
             // từ request (StoreLeadRequest đảm bảo tồn tại trong bảng branches).
             $userBranchId = Auth::user()?->branch_id;
-            $data['branch_id'] = $userBranchId ?? ($data['branch_id'] ?? null);
+            $branchId = $userBranchId ?? ($data['branch_id'] ?? null);
+            $data['branch_id'] = $branchId;
+
+            // Người phụ trách (nếu có) phải thuộc đúng chi nhánh của lead.
+            $this->guardAssigneeBranch($data['assigned_user_id'] ?? null, $branchId);
 
             return Lead::create($data);
         });
@@ -43,6 +47,11 @@ class LeadService
         return DB::transaction(function () use ($lead, $data) {
             // Chặn override branch_id qua input người dùng.
             unset($data['branch_id']);
+
+            // Người phụ trách mới (nếu có gửi lên) phải cùng chi nhánh với lead.
+            if (array_key_exists('assigned_user_id', $data)) {
+                $this->guardAssigneeBranch($data['assigned_user_id'], $lead->branch_id);
+            }
 
             $lead->update($data);
 
@@ -58,19 +67,30 @@ class LeadService
     public function assign(Lead $lead, ?int $userId): Lead
     {
         return DB::transaction(function () use ($lead, $userId) {
-            if ($userId !== null) {
-                $assignee = User::find($userId);
-
-                if (! $assignee || (int) $assignee->branch_id !== (int) $lead->branch_id) {
-                    throw ValidationException::withMessages([
-                        'assigned_user_id' => 'Người được assign phải thuộc cùng chi nhánh với lead.',
-                    ]);
-                }
-            }
+            $this->guardAssigneeBranch($userId, $lead->branch_id);
 
             $lead->update(['assigned_user_id' => $userId]);
 
             return $lead->fresh();
         });
+    }
+
+    /**
+     * Đảm bảo người được phụ trách (nếu có) thuộc đúng chi nhánh của lead.
+     * Bỏ qua khi null (chưa phân công).
+     */
+    private function guardAssigneeBranch(?int $userId, ?int $branchId): void
+    {
+        if ($userId === null) {
+            return;
+        }
+
+        $assignee = User::find($userId);
+
+        if (! $assignee || (int) $assignee->branch_id !== (int) $branchId) {
+            throw ValidationException::withMessages([
+                'assigned_user_id' => 'Người được assign phải thuộc cùng chi nhánh với lead.',
+            ]);
+        }
     }
 }

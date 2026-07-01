@@ -109,6 +109,53 @@ class LeadTest extends TestCase
         ]);
     }
 
+    public function test_super_admin_can_assign_user_of_chosen_branch_on_create(): void
+    {
+        $branch = Branch::factory()->create();
+        $sales = $this->makeUser('sales', $branch);
+        $admin = $this->makeUser('super-admin');
+
+        $this->actingAs($admin)
+            ->post(route('leads.store'), [
+                'school_name' => 'Trường Có Phụ Trách',
+                'school_level' => 'thcs',
+                'status' => 'new',
+                'branch_id' => $branch->id,
+                'assigned_user_id' => $sales->id,
+            ])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('leads', [
+            'school_name' => 'Trường Có Phụ Trách',
+            'branch_id' => $branch->id,
+            'assigned_user_id' => $sales->id,
+        ]);
+    }
+
+    public function test_create_rejects_assignee_from_other_branch(): void
+    {
+        // Guard: assignee phải cùng chi nhánh với lead — chặn cả khi request
+        // được "chế" tay với user thuộc chi nhánh khác.
+        $branchA = Branch::factory()->create();
+        $branchB = Branch::factory()->create();
+        $otherSales = $this->makeUser('sales', $branchB);
+        $admin = $this->makeUser('super-admin');
+
+        $this->actingAs($admin)
+            ->post(route('leads.store'), [
+                'school_name' => 'Trường Sai Chi Nhánh',
+                'school_level' => 'thcs',
+                'status' => 'new',
+                'branch_id' => $branchA->id,
+                'assigned_user_id' => $otherSales->id,
+            ])
+            ->assertSessionHasErrors('assigned_user_id');
+
+        $this->assertDatabaseMissing('leads', [
+            'school_name' => 'Trường Sai Chi Nhánh',
+        ]);
+    }
+
     public function test_super_admin_can_view_any_lead(): void
     {
         $admin = $this->makeUser('super-admin');

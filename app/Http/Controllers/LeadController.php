@@ -52,12 +52,20 @@ class LeadController extends Controller
             return redirect()->route('leads.index');
         }
 
+        $user = $request->user();
+        $isSuperAdmin = $user?->hasRole('super-admin') ?? false;
+
         return view('leads.create', [
             'statuses' => LeadStatus::cases(),
             'levels' => SchoolLevel::cases(),
-            'branchUsers' => $this->branchUsers($request->user()?->branch_id),
+            // Super-admin chọn chi nhánh ngay trên form → cần user của mọi chi
+            // nhánh (kèm branch_id) để lọc người phụ trách theo chi nhánh đã chọn.
+            // User thường chỉ thấy người trong chi nhánh của mình.
+            'branchUsers' => $isSuperAdmin
+                ? $this->assignableUsers()
+                : $this->branchUsers($user?->branch_id),
             // Super-admin không thuộc chi nhánh nào → phải tự chọn branch cho lead.
-            'branches' => $request->user()?->hasRole('super-admin')
+            'branches' => $isSuperAdmin
                 ? Branch::orderBy('name')->get()
                 : collect(),
         ]);
@@ -139,6 +147,19 @@ class LeadController extends Controller
 
         return User::query()
             ->where('branch_id', $branchId)
+            ->whereHas('roles', fn ($q) => $q->whereIn('name', ['sales', 'branch-manager']))
+            ->orderBy('name')
+            ->get();
+    }
+
+    /**
+     * Toàn bộ user có thể được phân công (mọi chi nhánh) — dùng cho super-admin
+     * để client lọc theo chi nhánh đã chọn.
+     */
+    private function assignableUsers()
+    {
+        return User::query()
+            ->whereNotNull('branch_id')
             ->whereHas('roles', fn ($q) => $q->whereIn('name', ['sales', 'branch-manager']))
             ->orderBy('name')
             ->get();
