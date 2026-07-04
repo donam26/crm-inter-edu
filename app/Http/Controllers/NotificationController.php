@@ -30,7 +30,8 @@ class NotificationController extends Controller
 
     public function readAll(Request $request)
     {
-        $request->user()->unreadNotifications->markAsRead();
+        // 1 query bulk thay vì markAsRead từng dòng.
+        $request->user()->unreadNotifications()->update(['read_at' => now()]);
 
         return back()->with('success', 'Đã đánh dấu tất cả là đã đọc.');
     }

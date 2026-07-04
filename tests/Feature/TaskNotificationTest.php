@@ -50,6 +50,33 @@ class TaskNotificationTest extends TestCase
         $this->assertDatabaseHas('task_watchers', ['user_id' => $sales->id]); // assignee auto-watch
     }
 
+    public function test_reassign_detaches_previous_assignee_from_watchers(): void
+    {
+        Notification::fake();
+        $branch = Branch::factory()->create();
+        $admin = $this->makeUser('super-admin');
+        $a = $this->makeUser('sales', $branch);
+        $b = $this->makeUser('sales', $branch);
+
+        $this->actingAs($admin)
+            ->post(route('tasks.store'), $this->payload(['assigned_user_id' => $a->id]))
+            ->assertRedirect();
+
+        $task = Task::withoutGlobalScopes()->latest('id')->firstOrFail();
+        $this->assertDatabaseHas('task_watchers', ['task_id' => $task->id, 'user_id' => $a->id]);
+
+        // Giao lại cho B → A bị gỡ khỏi watcher, B được thêm.
+        $this->actingAs($admin)
+            ->put(route('tasks.update', $task), $this->payload([
+                'assigned_user_id' => $b->id,
+                'status' => 'pending',
+            ]))
+            ->assertRedirect();
+
+        $this->assertDatabaseMissing('task_watchers', ['task_id' => $task->id, 'user_id' => $a->id]);
+        $this->assertDatabaseHas('task_watchers', ['task_id' => $task->id, 'user_id' => $b->id]);
+    }
+
     public function test_self_assigned_task_notifies_nobody(): void
     {
         Notification::fake();
@@ -144,7 +171,19 @@ class TaskNotificationTest extends TestCase
         $branch = Branch::factory()->create();
         $sales = $this->makeUser('sales', $branch);
         $task = Task::factory()->forUser($sales)->create();
-        $sales->notify(new TaskNotification($task->id, $task->title, 'assigned', 'Quản lý'));
+
+        // Chèn trực tiếp bảng notifications (không qua notify(): tránh
+        // ShouldQueueAfterCommit bị nuốt bởi transaction của RefreshDatabase).
+        $sales->notifications()->create([
+            'id' => (string) \Illuminate\Support\Str::uuid(),
+            'type' => TaskNotification::class,
+            'data' => [
+                'task_id' => $task->id,
+                'task_title' => $task->title,
+                'type' => 'assigned',
+                'message' => 'Quản lý đã giao cho bạn công việc: '.$task->title,
+            ],
+        ]);
 
         $this->actingAs($sales)
             ->get(route('notifications.index'))

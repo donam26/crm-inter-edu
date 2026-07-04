@@ -64,6 +64,8 @@ Chi tiết: [phase-02-notifications-sla.md](phase-02-notifications-sla.md)
 
 **Hoãn sang P2b:** bảng `saved_filters` (bộ lọc lưu tuỳ chỉnh) · thao tác hàng loạt (bulk) · @nhắc-tên có picker (hiện watcher-based "commented" đã phủ phần lớn nhu cầu) · digest gộp due-soon.
 
+**Review P2 (2026-07-04) — đã sửa:** H1 (chuông query toàn bộ unread mỗi trang → count + limit 8) · M1 (notify trong transaction → `ShouldQueueAfterCommit`) · M2 (watcher không gỡ khi đổi người → detach assignee cũ; vá rò rỉ tiêu đề chéo chi nhánh khi super-admin) · M4/M5 (index scheduler + backfill chống burst lần chạy đầu) · M6 (readAll 1 query) · L2 (concat). ⚠️ **M3 chờ bạn quyết:** `config/app.timezone=UTC` nhưng ops ở **Asia/Ho_Chi_Minh** → nhắc/quá-hạn lệch 7h; đổi timezone ảnh hưởng cách diễn giải dữ liệu cũ nên KHÔNG tự đổi.
+
 ## Rủi ro & lưu ý
 
 - **`User` cần trait `Notifiable`** — kiểm tra/thêm trước khi làm P2.
@@ -84,7 +86,7 @@ Chi tiết: [phase-02-notifications-sla.md](phase-02-notifications-sla.md)
 | Giai đoạn | Trạng thái | Ghi chú |
 |---|---|---|
 | P1 — Work-item depth | ✅ Hoàn thành | 267 test pass · nhánh `feat/tasks-work-item-depth` · code review 2026-07-04: HIGH (RBAC) + MEDIUM (N+1) đã sửa — xem `plans/reports/code-reviewer-260704-1635-tasks-work-item-depth.md` |
-| P2 lõi — Notifications & SLA | ✅ Hoàn thành | 274 test pass (7 mới) · thông báo + watcher + scheduler + chuông + chip lọc |
+| P2 lõi — Notifications & SLA | ✅ Hoàn thành + reviewed | 275 test pass · review 2026-07-04: H1/M1/M2/M4/M5/M6/L2 đã sửa; M3 (timezone) chờ quyết |
 | P2b — saved filters + bulk + @mention picker | ⬜ Hoãn | tách để giữ turn gọn, làm sau khi cần |
 
 _Cập nhật checkbox + bảng này khi hoàn thành từng phase._

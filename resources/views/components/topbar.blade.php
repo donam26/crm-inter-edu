@@ -46,7 +46,12 @@
 
     @auth
         {{-- Chuông thông báo --}}
-        @php $unread = auth()->user()->unreadNotifications; @endphp
+        @php
+            $unreadCount = auth()->user()->unreadNotifications()->count();
+            $recentUnread = $unreadCount > 0
+                ? auth()->user()->unreadNotifications()->latest()->limit(8)->get()
+                : collect();
+        @endphp
         <div class="relative" x-data="{ bellOpen: false }">
             <button
                 type="button"
@@ -55,8 +60,8 @@
             >
                 <span class="sr-only">Thông báo</span>
                 <x-icon name="bell" class="h-5 w-5" />
-                @if ($unread->isNotEmpty())
-                    <span class="absolute -top-0.5 -right-0.5 inline-flex items-center justify-center h-4 min-w-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold leading-none">{{ $unread->count() > 9 ? '9+' : $unread->count() }}</span>
+                @if ($unreadCount > 0)
+                    <span class="absolute -top-0.5 -right-0.5 inline-flex items-center justify-center h-4 min-w-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold leading-none">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>
                 @endif
             </button>
 
@@ -69,7 +74,7 @@
             >
                 <div class="flex items-center justify-between px-4 py-2 border-b border-gray-100">
                     <span class="font-semibold text-gray-900">Thông báo</span>
-                    @if ($unread->isNotEmpty())
+                    @if ($unreadCount > 0)
                         <form method="POST" action="{{ route('notifications.read-all') }}">
                             @csrf
                             <button type="submit" class="text-xs text-brand-600 hover:underline">Đánh dấu đã đọc</button>
@@ -77,7 +82,7 @@
                     @endif
                 </div>
                 <div class="max-h-80 overflow-y-auto">
-                    @forelse ($unread->take(8) as $note)
+                    @forelse ($recentUnread as $note)
                         <a href="{{ route('notifications.open', $note->id) }}" class="block px-4 py-2.5 hover:bg-gray-50 border-b border-gray-50 last:border-0">
                             <div class="text-gray-700">{{ $note->data['message'] ?? 'Cập nhật công việc' }}</div>
                             <div class="text-[11px] text-gray-400 mt-0.5">{{ $note->created_at->diffForHumans() }}</div>

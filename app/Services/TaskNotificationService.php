@@ -24,6 +24,13 @@ class TaskNotificationService
             return;
         }
 
+        // Đổi người: gỡ assignee CŨ khỏi watcher (tránh nhiễu thông báo dài hạn
+        // và rò rỉ tiêu đề task khi super-admin chuyển task chéo chi nhánh).
+        $previousId = $task->getOriginal('assigned_user_id');
+        if ($previousId && (int) $previousId !== $assignee->id) {
+            $task->watchers()->detach($previousId);
+        }
+
         $task->watchers()->syncWithoutDetaching([$assignee->id]);
 
         if ($assignee->id !== Auth::id()) {

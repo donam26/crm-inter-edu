@@ -69,7 +69,7 @@ class DispatchTaskReminders extends Command
             ->chunkById(100, function ($tasks) use (&$count) {
                 foreach ($tasks as $task) {
                     $recipients = $task->watchers
-                        ->push($task->assignee)
+                        ->concat([$task->assignee])
                         ->filter()
                         ->unique('id');
 
