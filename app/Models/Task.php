@@ -6,17 +6,26 @@ use App\Enums\TaskPriority;
 use App\Enums\TaskStatus;
 use App\Enums\TaskType;
 use App\Models\Scopes\BranchScope;
+use App\Observers\TaskObserver;
 use Database\Factories\TaskFactory;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Spatie\Activitylog\Models\Concerns\LogsActivity;
+use Spatie\Activitylog\Support\LogOptions;
 
+#[ObservedBy([TaskObserver::class])]
 class Task extends Model
 {
     /** @use HasFactory<TaskFactory> */
     use HasFactory;
+
+    use LogsActivity;
 
     protected $fillable = [
         'branch_id',
@@ -26,6 +35,7 @@ class Task extends Model
         'completed_by',
         'title',
         'description',
+        'start_at',
         'type',
         'priority',
         'status',
@@ -39,9 +49,12 @@ class Task extends Model
         'type' => TaskType::class,
         'priority' => TaskPriority::class,
         'status' => TaskStatus::class,
+        'start_at' => 'datetime',
         'due_at' => 'datetime',
         'completed_at' => 'datetime',
         'remind_at' => 'datetime',
+        'reminded_at' => 'datetime',
+        'overdue_notified_at' => 'datetime',
         'reminder_enabled' => 'boolean',
     ];
 
@@ -75,6 +88,40 @@ class Task extends Model
     public function completer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'completed_by');
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(TaskComment::class)->latest();
+    }
+
+    public function checklistItems(): HasMany
+    {
+        return $this->hasMany(TaskChecklistItem::class)->orderBy('position');
+    }
+
+    public function labels(): BelongsToMany
+    {
+        return $this->belongsToMany(Label::class, 'label_task');
+    }
+
+    public function watchers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'task_watchers');
+    }
+
+    // ───────────────────── activity log ─────────────────────
+
+    /**
+     * Chỉ ghi audit các field cốt lõi (không log completed_at/by — suy ra từ
+     * status). logOnlyDirty: chỉ log khi field đổi thật.
+     */
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logOnly(['status', 'assigned_user_id', 'priority', 'due_at', 'start_at', 'title'])
+            ->logOnlyDirty()
+            ->dontLogEmptyChanges();
     }
 
     // ───────────────────── computed ─────────────────────

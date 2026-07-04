@@ -27,6 +27,9 @@
         </x-select>
     </div>
 
+    <x-input name="start_at" label="Ngày bắt đầu (tuỳ chọn)" type="datetime-local"
+        :value="old('start_at', $task->start_at?->format('Y-m-d\TH:i'))" />
+
     <x-input name="due_at" label="Hạn chót" type="datetime-local" required
         :value="old('due_at', $task->due_at?->format('Y-m-d\TH:i'))" />
 

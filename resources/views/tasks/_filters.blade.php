@@ -11,6 +11,19 @@
       - $view (string: 'kanban' | 'list')
 --}}
 <x-card padding="p-4" class="mb-6">
+    {{-- Chip lọc nhanh --}}
+    @php $meId = auth()->id(); @endphp
+    <div class="flex flex-wrap gap-2 mb-4">
+        <a href="{{ route('tasks.index', ['view' => $view, 'assigned_user_id' => $meId]) }}"
+            class="px-3 py-1 rounded-full text-xs font-medium border transition {{ (string) ($filters['assigned_user_id'] ?? '') === (string) $meId ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50' }}">Việc của tôi</a>
+        <a href="{{ route('tasks.index', ['view' => $view, 'due' => 'overdue']) }}"
+            class="px-3 py-1 rounded-full text-xs font-medium border transition {{ ($filters['due'] ?? '') === 'overdue' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50' }}">Quá hạn</a>
+        <a href="{{ route('tasks.index', ['view' => $view, 'due' => 'today']) }}"
+            class="px-3 py-1 rounded-full text-xs font-medium border transition {{ ($filters['due'] ?? '') === 'today' ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50' }}">Đến hạn hôm nay</a>
+        <a href="{{ route('tasks.index', ['view' => $view, 'watching' => 1]) }}"
+            class="px-3 py-1 rounded-full text-xs font-medium border transition {{ ! empty($filters['watching']) ? 'bg-brand-600 text-white border-brand-600' : 'bg-white text-gray-600 border-gray-300 hover:bg-gray-50' }}">Tôi theo dõi</a>
+    </div>
+
     <form method="GET" action="{{ route('tasks.index') }}" class="flex flex-wrap items-end gap-3">
         {{-- Giữ tab hiện tại khi submit filter --}}
         <input type="hidden" name="view" value="{{ $view }}">

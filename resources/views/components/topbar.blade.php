@@ -45,6 +45,56 @@
     </div>
 
     @auth
+        {{-- Chuông thông báo --}}
+        @php
+            $unreadCount = auth()->user()->unreadNotifications()->count();
+            $recentUnread = $unreadCount > 0
+                ? auth()->user()->unreadNotifications()->latest()->limit(8)->get()
+                : collect();
+        @endphp
+        <div class="relative" x-data="{ bellOpen: false }">
+            <button
+                type="button"
+                @click="bellOpen = !bellOpen"
+                class="relative p-2 rounded-md text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition focus:outline-none focus:ring-2 focus:ring-brand-500"
+            >
+                <span class="sr-only">Thông báo</span>
+                <x-icon name="bell" class="h-5 w-5" />
+                @if ($unreadCount > 0)
+                    <span class="absolute -top-0.5 -right-0.5 inline-flex items-center justify-center h-4 min-w-4 px-1 rounded-full bg-red-500 text-white text-[10px] font-semibold leading-none">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>
+                @endif
+            </button>
+
+            <div
+                x-show="bellOpen"
+                @click.outside="bellOpen = false"
+                x-transition
+                x-cloak
+                class="absolute right-0 mt-2 w-80 origin-top-right bg-white rounded-lg border border-gray-200 shadow-lg py-1.5 text-sm z-30"
+            >
+                <div class="flex items-center justify-between px-4 py-2 border-b border-gray-100">
+                    <span class="font-semibold text-gray-900">Thông báo</span>
+                    @if ($unreadCount > 0)
+                        <form method="POST" action="{{ route('notifications.read-all') }}">
+                            @csrf
+                            <button type="submit" class="text-xs text-brand-600 hover:underline">Đánh dấu đã đọc</button>
+                        </form>
+                    @endif
+                </div>
+                <div class="max-h-80 overflow-y-auto">
+                    @forelse ($recentUnread as $note)
+                        <a href="{{ route('notifications.open', $note->id) }}" class="block px-4 py-2.5 hover:bg-gray-50 border-b border-gray-50 last:border-0">
+                            <div class="text-gray-700">{{ $note->data['message'] ?? 'Cập nhật công việc' }}</div>
+                            <div class="text-[11px] text-gray-400 mt-0.5">{{ $note->created_at->diffForHumans() }}</div>
+                        </a>
+                    @empty
+                        <div class="px-4 py-6 text-center text-gray-400 text-xs">Không có thông báo mới.</div>
+                    @endforelse
+                </div>
+                <a href="{{ route('notifications.index') }}" class="block px-4 py-2 text-center text-xs text-brand-600 hover:bg-gray-50 border-t border-gray-100">Xem tất cả</a>
+            </div>
+        </div>
+
         {{-- User dropdown --}}
         <div class="relative" x-data="{ menuOpen: false }">
             <button

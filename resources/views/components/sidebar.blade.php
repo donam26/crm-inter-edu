@@ -123,6 +123,14 @@
                 </x-nav-link>
             @endif
         @endcan
+
+        @can('labels.manage')
+            @if (Route::has('labels.index'))
+                <x-nav-link :href="route('labels.index')" icon="tasks" :active="request()->routeIs('labels.*')">
+                    Nhãn công việc
+                </x-nav-link>
+            @endif
+        @endcan
     </nav>
 </aside>
 

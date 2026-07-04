@@ -68,6 +68,13 @@ class PermissionCatalog
                     'tasks.delete' => 'Xóa công việc',
                 ],
             ],
+            'labels' => [
+                'label' => 'Nhãn công việc',
+                'permissions' => [
+                    'labels.view' => 'Xem nhãn',
+                    'labels.manage' => 'Quản lý nhãn',
+                ],
+            ],
             'events' => [
                 'label' => 'Lịch hẹn',
                 'permissions' => [
