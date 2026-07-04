@@ -18,7 +18,8 @@ COPY public ./public
 RUN npm run build
 
 # ---- PHP base ----
-FROM php:8.3-fpm-alpine AS base
+# php:8.4 to match composer.lock (Laravel 12 resolved symfony ^8.0 which needs php >=8.4).
+FROM php:8.4-fpm-alpine AS base
 
 # Web server + process manager + libs for the PHP extensions we build.
 RUN apk add --no-cache \
