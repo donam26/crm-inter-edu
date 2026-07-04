@@ -1,0 +1,37 @@
+services:
+  app:
+    image: ${IMAGE:-crm-inter-edu:latest}
+    container_name: ${APP_CONTAINER_NAME:-crm-inter-edu}
+    restart: ${APP_RESTART_POLICY:-unless-stopped}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: app
+    env_file:
+      - .env
+    environment:
+      RUN_MIGRATIONS: "${RUN_MIGRATIONS:-false}"
+    ports:
+      # Bound to loopback only; the host nginx reverse-proxies TLS -> this port.
+      - "${APP_BIND_HOST:-127.0.0.1}:${APP_PORT:-8000}:8000"
+    volumes:
+      - ./storage:/var/www/html/storage
+      # Live-tunable php-fpm pool (restart app to apply, no rebuild).
+      - ./docker/php-fpm.conf:/usr/local/etc/php-fpm.d/zz-custom.conf:ro
+    networks:
+      - crm
+      - db_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/up"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+networks:
+  crm:
+    driver: bridge
+  db_network:
+    # Shared MySQL/Redis live in the db-stack compose project on this network.
+    name: ${DB_NETWORK_NAME:-db-stack_db_net}
+    external: true
