@@ -60,7 +60,7 @@ class TaskService
         $filters = array_diff_key($filters, ['status' => null]);
 
         $tasks = $this->buildQuery($filters)
-            ->orderByRaw("CASE WHEN due_at IS NULL THEN 1 ELSE 0 END")
+            ->orderByRaw('CASE WHEN due_at IS NULL THEN 1 ELSE 0 END')
             ->orderBy('due_at')
             ->orderByDesc('id')
             ->get();
@@ -92,7 +92,11 @@ class TaskService
     private function buildQuery(array $filters): Builder
     {
         return Task::query()
-            ->with(['branch', 'lead', 'assignee', 'creator'])
+            ->with(['branch', 'lead', 'assignee', 'creator', 'labels'])
+            ->withCount([
+                'checklistItems',
+                'checklistItems as checklist_done_count' => fn ($q) => $q->where('is_done', true),
+            ])
             ->when($filters['status'] ?? null, fn ($q, $v) => $q->where('status', $v))
             ->when($filters['priority'] ?? null, fn ($q, $v) => $q->where('priority', $v))
             ->when($filters['type'] ?? null, fn ($q, $v) => $q->where('type', $v))

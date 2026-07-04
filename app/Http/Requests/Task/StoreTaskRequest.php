@@ -21,6 +21,7 @@ class StoreTaskRequest extends FormRequest
         return [
             'title' => ['required', 'string', 'min:3', 'max:255'],
             'description' => ['nullable', 'string', 'max:5000'],
+            'start_at' => ['nullable', 'date', 'before_or_equal:due_at'],
             'type' => ['required', 'string', Rule::in(TaskType::values())],
             'priority' => ['required', 'string', Rule::in(TaskPriority::values())],
             'status' => ['nullable', 'string', Rule::in([
@@ -40,6 +41,7 @@ class StoreTaskRequest extends FormRequest
     {
         return [
             'due_at.after_or_equal' => 'Hạn chót không được ở quá khứ.',
+            'start_at.before_or_equal' => 'Ngày bắt đầu phải trước hoặc bằng hạn chót.',
             'remind_at.before_or_equal' => 'Thời điểm nhắc phải trước hoặc bằng hạn chót.',
             'title.min' => 'Tiêu đề phải có ít nhất 3 ký tự.',
         ];

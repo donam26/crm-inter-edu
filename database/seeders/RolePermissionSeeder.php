@@ -75,6 +75,7 @@ class RolePermissionSeeder extends Seeder
             'contacts.view', 'contacts.create', 'contacts.update', 'contacts.delete',
             'activities.view', 'activities.create', 'activities.update', 'activities.delete',
             'tasks.view', 'tasks.create', 'tasks.update', 'tasks.delete',
+            'labels.view',
             'events.view', 'events.create', 'events.update', 'events.delete',
             'products.view',
             'deals.view', 'deals.create', 'deals.update', 'deals.close',
