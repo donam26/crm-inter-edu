@@ -11,6 +11,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Trust the host reverse proxy (nginx -> 127.0.0.1:8000) so X-Forwarded-Proto
+        // is honoured and Laravel generates https:// URLs behind TLS termination.
+        $middleware->trustProxies(at: '*');
+
         // Đặt team context (branch_id) cho Spatie permission trên mọi web request.
         $middleware->web(append: [
             \App\Http\Middleware\SetPermissionsTeamFromBranch::class,
