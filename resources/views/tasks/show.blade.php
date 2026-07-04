@@ -211,6 +211,22 @@
                             </form>
                         @endcan
                     </div>
+
+                    {{-- Theo dõi --}}
+                    <div class="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
+                        <span class="text-sm text-gray-500">Theo dõi ({{ $task->watchers->count() }})</span>
+                        @if ($isWatching)
+                            <form method="POST" action="{{ route('tasks.unwatch', $task) }}">
+                                @csrf
+                                <button type="submit" class="text-xs font-medium text-gray-500 hover:text-gray-700">Bỏ theo dõi</button>
+                            </form>
+                        @else
+                            <form method="POST" action="{{ route('tasks.watch', $task) }}">
+                                @csrf
+                                <button type="submit" class="text-xs font-medium text-brand-600 hover:underline">Theo dõi</button>
+                            </form>
+                        @endif
+                    </div>
                 </x-card>
 
                 {{-- Lịch sử --}}

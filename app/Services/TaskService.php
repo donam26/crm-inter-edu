@@ -103,6 +103,7 @@ class TaskService
             ->when($filters['assigned_user_id'] ?? null, fn ($q, $v) => $q->where('assigned_user_id', $v))
             ->when($filters['lead_id'] ?? null, fn ($q, $v) => $q->where('lead_id', $v))
             ->when($filters['branch_id'] ?? null, fn ($q, $v) => $q->where('branch_id', $v))
+            ->when($filters['watching'] ?? null, fn ($q) => $q->whereHas('watchers', fn ($w) => $w->where('users.id', Auth::id())))
             ->when($filters['q'] ?? null, fn ($q, $v) => $q->where(function ($q2) use ($v) {
                 $q2->where('title', 'like', "%{$v}%")
                     ->orWhere('description', 'like', "%{$v}%");

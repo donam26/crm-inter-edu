@@ -10,6 +10,7 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\LabelController;
 use App\Http\Controllers\LeadController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\RevenueReportController;
@@ -53,6 +54,13 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/checklist/{item}', [TaskChecklistController::class, 'destroy'])->name('checklist.destroy');
     Route::post('/tasks/{task}/labels', [TaskController::class, 'syncLabels'])->name('tasks.labels.sync');
     Route::resource('labels', LabelController::class)->except(['show']);
+    Route::post('/tasks/{task}/watch', [TaskController::class, 'watch'])->name('tasks.watch');
+    Route::post('/tasks/{task}/unwatch', [TaskController::class, 'unwatch'])->name('tasks.unwatch');
+
+    // Thông báo (chuông + trang danh sách).
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/{notification}/open', [NotificationController::class, 'open'])->name('notifications.open');
+    Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
 
     Route::get('/events/calendar', [EventController::class, 'calendar'])->name('events.calendar');
     Route::resource('events', EventController::class);

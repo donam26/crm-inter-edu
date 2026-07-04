@@ -17,6 +17,7 @@ use App\Services\TaskService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Spatie\Activitylog\Models\Activity;
@@ -34,7 +35,7 @@ class TaskController extends Controller
 
         $filters = $request->only([
             'status', 'priority', 'type', 'assigned_user_id',
-            'lead_id', 'branch_id', 'due', 'q',
+            'lead_id', 'branch_id', 'due', 'q', 'watching',
         ]);
 
         // Sales chỉ thấy task của chính mình hoặc task của Lead mình phụ trách.
@@ -111,7 +112,7 @@ class TaskController extends Controller
         $this->authorize('view', $task);
         $task->load([
             'branch', 'lead', 'assignee', 'creator', 'completer',
-            'labels', 'checklistItems', 'comments.author',
+            'labels', 'checklistItems', 'comments.author', 'watchers',
         ]);
 
         return view('tasks.show', [
@@ -120,6 +121,7 @@ class TaskController extends Controller
             'branchLabels' => Label::where('branch_id', $task->branch_id)
                 ->orderBy('name')
                 ->get(),
+            'isWatching' => $task->watchers->contains(Auth::id()),
         ]);
     }
 
@@ -282,6 +284,22 @@ class TaskController extends Controller
         $this->labels->sync($task, $data['label_ids'] ?? []);
 
         return back()->with('success', 'Đã cập nhật nhãn.');
+    }
+
+    public function watch(Task $task)
+    {
+        $this->authorize('view', $task);
+        $task->watchers()->syncWithoutDetaching([Auth::id()]);
+
+        return back()->with('success', 'Đang theo dõi công việc này.');
+    }
+
+    public function unwatch(Task $task)
+    {
+        $this->authorize('view', $task);
+        $task->watchers()->detach(Auth::id());
+
+        return back()->with('success', 'Đã bỏ theo dõi công việc này.');
     }
 
     /**
