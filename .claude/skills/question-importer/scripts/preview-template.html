@@ -1,0 +1,36 @@
+<!-- preview-template.html -->
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+<style>
+  body{font-family:'Times New Roman',serif;font-size:18px;color:#111;padding:24px;width:760px}
+  table{border-collapse:collapse;margin:8px 0} td,th{border:1px solid #444;padding:4px 8px}
+  .opt{margin:6px 0} img{max-width:100%}
+  ol.opts{list-style:none;padding-left:0}
+  .passage{background:#f8f8f8;border-left:3px solid #888;padding:12px 16px;margin-bottom:12px;line-height:1.6}
+</style></head>
+<body><div id="q"></div>
+<script>
+  window.renderQuestion = (data) => {
+    // Mirror the real frontend MathContent: every field is RAW HTML passthrough
+    // (innerHTML) + KaTeX for $...$ — NO Markdown. Stored content already uses
+    // <img>, <u>, <strong>, <table>. If a field wrongly contains Markdown
+    // ![](url), it shows literally here too (same as the site) so verify catches it.
+    const raw = (s) => (s || '');
+    let html = '';
+    if (data.passage){
+      html += '<div class="passage">'+raw(data.passage)+'</div><hr>';
+    }
+    html += '<div class="stem">'+raw(data.text)+'</div>';
+    if (data.options?.length){
+      html += '<ol class="opts">'+data.options.map(o=>`<li class="opt"><b>${o.key}.</b> ${raw(o.value)}</li>`).join('')+'</ol>';
+    }
+    if (data.sub_items?.length){
+      html += '<ul>'+data.sub_items.map(s=>`<li><b>${s.key})</b> ${raw(s.text)}</li>`).join('')+'</ul>';
+    }
+    document.getElementById('q').innerHTML = html;
+    renderMathInElement(document.body,{delimiters:[{left:'$',right:'$',display:false},{left:'$$',right:'$$',display:true}]});
+    window.__rendered = true;
+  };
+</script></body></html>

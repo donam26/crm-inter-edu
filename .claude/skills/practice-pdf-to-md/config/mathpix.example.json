@@ -1,0 +1,5 @@
+{
+  "app_id": "your_mathpix_app_id",
+  "app_key": "your_mathpix_app_key",
+  "_comment": "Copy this file to mathpix.json (gitignored) and fill in the real Mathpix credentials. Env vars MATHPIX_APP_ID / MATHPIX_APP_KEY override this file when set."
+}
