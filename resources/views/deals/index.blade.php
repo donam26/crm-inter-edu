@@ -36,14 +36,14 @@
         </form>
     </x-card>
 
-    <x-table :headers="['Mã', 'Tiêu đề', 'Trường', 'Stage', 'Giá trị', 'Phụ trách', '']">
+    <x-table :headers="['Mã', 'Tiêu đề', 'Khách hàng', 'Stage', 'Giá trị', 'Phụ trách', '']">
         @forelse ($deals as $d)
             <tr>
                 <td class="px-4 py-3">
                     <a href="{{ route('deals.show', $d) }}" class="font-mono text-xs font-medium text-brand-600 hover:underline">{{ $d->code }}</a>
                 </td>
                 <td class="px-4 py-3">{{ $d->title }}</td>
-                <td class="px-4 py-3 text-gray-700">{{ $d->lead?->school_name ?? '—' }}</td>
+                <td class="px-4 py-3 text-gray-700">{{ $d->customer?->name ?? '—' }}</td>
                 <td class="px-4 py-3">
                     <x-badge :variant="$d->stage?->badgeVariant() ?? 'secondary'">{{ $d->stage?->label() }}</x-badge>
                 </td>

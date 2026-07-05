@@ -15,7 +15,7 @@ class StoreDealRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'lead_id' => ['required', 'integer', 'exists:leads,id'],
+            'customer_id' => ['required', 'integer', 'exists:customers,id'],
             'title' => ['nullable', 'string', 'max:255'],
             'owner_user_id' => ['nullable', 'integer', 'exists:users,id'],
             'expected_close_date' => ['nullable', 'date'],

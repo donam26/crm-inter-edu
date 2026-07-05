@@ -9,7 +9,7 @@ use App\Http\Requests\Task\StoreTaskRequest;
 use App\Http\Requests\Task\UpdateTaskRequest;
 use App\Models\Branch;
 use App\Models\Label;
-use App\Models\Lead;
+use App\Models\Customer;
 use App\Models\Task;
 use App\Models\User;
 use App\Services\LabelService;
@@ -35,10 +35,10 @@ class TaskController extends Controller
 
         $filters = $request->only([
             'status', 'priority', 'type', 'assigned_user_id',
-            'lead_id', 'branch_id', 'due', 'q', 'watching',
+            'customer_id', 'branch_id', 'due', 'q', 'watching',
         ]);
 
-        // Sales chỉ thấy task của chính mình hoặc task của Lead mình phụ trách.
+        // Sales chỉ thấy task của chính mình hoặc task của Customer mình phụ trách.
         // Force filter ở Service-layer query là đủ; Policy@view chặn show của
         // task không thuộc phạm vi.
         if ($request->user()?->hasRole('sales')) {
@@ -91,8 +91,8 @@ class TaskController extends Controller
             'priorities' => TaskPriority::cases(),
             'types' => TaskType::cases(),
             'branchUsers' => $this->branchUsers($request->user()),
-            'leads' => $this->branchLeads($request->user()),
-            'preselectedLeadId' => $request->integer('lead_id') ?: null,
+            'customers' => $this->branchCustomers($request->user()),
+            'preselectedCustomerId' => $request->integer('customer_id') ?: null,
         ]);
     }
 
@@ -111,7 +111,7 @@ class TaskController extends Controller
     {
         $this->authorize('view', $task);
         $task->load([
-            'branch', 'lead', 'assignee', 'creator', 'completer',
+            'branch', 'customer', 'assignee', 'creator', 'completer',
             'labels', 'checklistItems', 'comments.author', 'watchers',
         ]);
 
@@ -139,7 +139,7 @@ class TaskController extends Controller
             'priorities' => TaskPriority::cases(),
             'types' => TaskType::cases(),
             'branchUsers' => $this->branchUsers($request->user(), $task->branch_id),
-            'leads' => $this->branchLeads($request->user(), $task->branch_id),
+            'customers' => $this->branchCustomers($request->user(), $task->branch_id),
         ]);
     }
 
@@ -250,7 +250,7 @@ class TaskController extends Controller
             ->get();
     }
 
-    private function branchLeads(?User $user, ?int $forceBranchId = null)
+    private function branchCustomers(?User $user, ?int $forceBranchId = null)
     {
         if ($user === null) {
             return collect();
@@ -258,15 +258,15 @@ class TaskController extends Controller
 
         $branchId = $forceBranchId ?? $user->branch_id;
 
-        // Super-admin: nếu không có branchId xác định → trả tất cả lead
+        // Super-admin: nếu không có branchId xác định → trả tất cả customer
         // (BranchScope đã bypass cho super-admin).
-        $query = Lead::query()->orderBy('school_name');
+        $query = Customer::query()->orderBy('name');
 
         if ($branchId !== null) {
             $query->where('branch_id', $branchId);
         }
 
-        return $query->limit(500)->get(['id', 'school_name', 'branch_id']);
+        return $query->limit(500)->get(['id', 'name', 'branch_id']);
     }
 
     /**

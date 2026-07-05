@@ -67,7 +67,7 @@ class PaymentController extends Controller
     public function show(Payment $payment)
     {
         $this->authorize('view', $payment);
-        $payment->load(['branch', 'invoice.deal.lead', 'creator', 'confirmer']);
+        $payment->load(['branch', 'invoice.deal.customer', 'creator', 'confirmer']);
 
         return view('payments.show', compact('payment'));
     }

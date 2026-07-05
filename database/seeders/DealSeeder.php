@@ -7,7 +7,7 @@ use App\Enums\InvoiceStatus;
 use App\Models\Deal;
 use App\Models\DealItem;
 use App\Models\Invoice;
-use App\Models\Lead;
+use App\Models\Customer;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\User;
@@ -18,20 +18,20 @@ class DealSeeder extends Seeder
     /**
      * Sinh dữ liệu mẫu cho module Revenue.
      *
-     * Mỗi lead lấy ngẫu nhiên ~70% sẽ có deal (1 lead = 1 deal). Mỗi deal có
+     * Mỗi customer lấy ngẫu nhiên ~70% sẽ có deal (1 customer = 1 deal). Mỗi deal có
      * 1-3 items lấy từ catalog Product cùng branch. Một phần deal chuyển
      * Won + sinh hoá đơn + thanh toán đã xác nhận để dashboard có dữ liệu.
      */
     public function run(): void
     {
-        $leads = Lead::withoutGlobalScopes()->inRandomOrder()->take(40)->get();
+        $customers = Customer::withoutGlobalScopes()->inRandomOrder()->take(40)->get();
 
-        foreach ($leads as $lead) {
+        foreach ($customers as $customer) {
             if (random_int(1, 10) <= 3) {
-                continue; // 30% lead không có deal
+                continue; // 30% customer không có deal
             }
 
-            $branchId = $lead->branch_id;
+            $branchId = $customer->branch_id;
 
             $products = Product::withoutGlobalScopes()
                 ->where('branch_id', $branchId)
@@ -50,8 +50,8 @@ class DealSeeder extends Seeder
             $stage = $this->randomStage();
 
             /** @var Deal $deal */
-            $deal = Deal::factory()->forLead($lead)->create([
-                'owner_user_id' => $owner?->id ?? $lead->assigned_user_id,
+            $deal = Deal::factory()->forLead($customer)->create([
+                'owner_user_id' => $owner?->id ?? $customer->assigned_user_id,
                 'created_by' => $owner?->id ?? User::query()->whereNull('branch_id')->value('id'),
                 'stage' => $stage->value,
                 'actual_close_date' => $stage->isClosed()
@@ -110,7 +110,7 @@ class DealSeeder extends Seeder
     private function randomStage(): DealStage
     {
         $weights = [
-            DealStage::Lead->value => 2,
+            DealStage::Customer->value => 2,
             DealStage::Proposal->value => 3,
             DealStage::Negotiation->value => 3,
             DealStage::ClosedWon->value => 4,

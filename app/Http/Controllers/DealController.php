@@ -8,7 +8,7 @@ use App\Http\Requests\Deal\StoreDealRequest;
 use App\Http\Requests\Deal\UpdateDealRequest;
 use App\Models\Branch;
 use App\Models\Deal;
-use App\Models\Lead;
+use App\Models\Customer;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\DealService;
@@ -51,17 +51,17 @@ class DealController extends Controller
             return redirect()->route('deals.index');
         }
 
-        // Lead chưa có deal trong cùng branch (1 lead = 1 deal).
-        $leads = Lead::query()
+        // Customer chưa có deal trong cùng branch (1 customer = 1 deal).
+        $customers = Customer::query()
             ->whereDoesntHave('deal')
-            ->orderBy('school_name')
+            ->orderBy('name')
             ->limit(500)
             ->get();
 
         return view('deals.create', [
-            'leads' => $leads,
+            'customers' => $customers,
             'branchUsers' => $this->branchUsers($request->user()?->branch_id),
-            'preselectedLeadId' => $request->integer('lead_id') ?: null,
+            'preselectedCustomerId' => $request->integer('customer_id') ?: null,
         ]);
     }
 
@@ -79,7 +79,7 @@ class DealController extends Controller
     public function show(Deal $deal)
     {
         $this->authorize('view', $deal);
-        $deal->load(['branch', 'lead', 'owner', 'creator', 'items.product', 'invoices']);
+        $deal->load(['branch', 'customer', 'owner', 'creator', 'items.product', 'invoices']);
 
         return view('deals.show', [
             'deal' => $deal,

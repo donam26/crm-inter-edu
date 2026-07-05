@@ -21,7 +21,7 @@ class PaymentService
     public function list(array $filters = []): LengthAwarePaginator
     {
         return Payment::query()
-            ->with(['branch', 'invoice.deal.lead', 'creator', 'confirmer'])
+            ->with(['branch', 'invoice.deal.customer', 'creator', 'confirmer'])
             ->when($filters['method'] ?? null, fn ($q, $v) => $q->where('method', $v))
             ->when($filters['invoice_id'] ?? null, fn ($q, $v) => $q->where('invoice_id', $v))
             ->when($filters['branch_id'] ?? null, fn ($q, $v) => $q->where('branch_id', $v))

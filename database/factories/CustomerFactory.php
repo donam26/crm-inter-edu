@@ -2,29 +2,28 @@
 
 namespace Database\Factories;
 
-use App\Enums\LeadStatus;
-use App\Enums\SchoolLevel;
+use App\Enums\CustomerStatus;
 use App\Models\Branch;
-use App\Models\Lead;
+use App\Models\Customer;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<Lead>
+ * @extends Factory<Customer>
  */
-class LeadFactory extends Factory
+class CustomerFactory extends Factory
 {
-    protected $model = Lead::class;
+    protected $model = Customer::class;
 
     public function definition(): array
     {
         return [
             'branch_id' => Branch::query()->inRandomOrder()->value('id') ?? Branch::factory(),
             'assigned_user_id' => null,
-            'school_name' => 'Trường '.$this->faker->lastName().' '.$this->faker->randomElement(['THCS', 'THPT', 'TH']),
-            'school_level' => $this->faker->randomElement(SchoolLevel::values()),
-            'student_size' => $this->faker->numberBetween(50, 2000),
+            'name' => $this->faker->name(),
+            'phone' => $this->faker->phoneNumber(),
+            'email' => $this->faker->safeEmail(),
             'address' => $this->faker->address(),
-            'status' => $this->faker->randomElement(LeadStatus::values()),
+            'status' => $this->faker->randomElement(CustomerStatus::values()),
             'note' => $this->faker->optional()->sentence(),
         ];
     }
@@ -36,9 +35,9 @@ class LeadFactory extends Factory
         return $this->state(fn () => ['branch_id' => $id]);
     }
 
-    public function status(LeadStatus|string $status): self
+    public function status(CustomerStatus|string $status): self
     {
-        $value = $status instanceof LeadStatus ? $status->value : $status;
+        $value = $status instanceof CustomerStatus ? $status->value : $status;
 
         return $this->state(fn () => ['status' => $value]);
     }

@@ -20,7 +20,7 @@ class InvoiceService
     public function list(array $filters = []): LengthAwarePaginator
     {
         return Invoice::query()
-            ->with(['branch', 'deal.lead'])
+            ->with(['branch', 'deal.customer'])
             ->when($filters['status'] ?? null, fn ($q, $v) => $q->where('status', $v))
             ->when($filters['deal_id'] ?? null, fn ($q, $v) => $q->where('deal_id', $v))
             ->when($filters['branch_id'] ?? null, fn ($q, $v) => $q->where('branch_id', $v))

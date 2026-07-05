@@ -75,10 +75,10 @@
             <div class="flex"><span class="w-44 text-gray-500">Người chủ trì:</span><span>{{ $event->organizer?->name ?? '—' }}</span></div>
             <div class="flex"><span class="w-44 text-gray-500">Người tạo:</span><span>{{ $event->creator?->name ?? '—' }}</span></div>
             <div class="flex"><span class="w-44 text-gray-500">Chi nhánh:</span><span>{{ $event->branch?->name }}</span></div>
-            @if ($event->lead)
-                <div class="flex"><span class="w-44 text-gray-500">Lead:</span>
-                    <a href="{{ route('leads.show', $event->lead) }}" class="text-brand-600 hover:underline">
-                        {{ $event->lead->school_name }}
+            @if ($event->customer)
+                <div class="flex"><span class="w-44 text-gray-500">Khách hàng:</span>
+                    <a href="{{ route('customers.show', $event->customer) }}" class="text-brand-600 hover:underline">
+                        {{ $event->customer->name }}
                     </a>
                 </div>
             @endif

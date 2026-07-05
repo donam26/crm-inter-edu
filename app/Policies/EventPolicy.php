@@ -22,7 +22,7 @@ class EventPolicy
         }
 
         // events.view-all → mọi event trong branch; nếu không → event mình tổ
-        // chức/tạo, gắn Lead mình phụ trách, hoặc được mời.
+        // chức/tạo, gắn Customer mình phụ trách, hoặc được mời.
         if ($user->can('events.view-all')) {
             return true;
         }
@@ -31,7 +31,7 @@ class EventPolicy
             return true;
         }
 
-        if ($event->lead_id !== null && $event->lead?->assigned_user_id === $user->id) {
+        if ($event->customer_id !== null && $event->customer?->assigned_user_id === $user->id) {
             return true;
         }
 

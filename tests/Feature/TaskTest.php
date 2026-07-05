@@ -6,7 +6,7 @@ use App\Enums\TaskPriority;
 use App\Enums\TaskStatus;
 use App\Enums\TaskType;
 use App\Models\Branch;
-use App\Models\Lead;
+use App\Models\Customer;
 use App\Models\Scopes\BranchScope;
 use App\Models\Task;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -200,14 +200,14 @@ class TaskTest extends TestCase
         $salesOwner = $this->makeUser('sales', $branch);
         $salesAssignee = $this->makeUser('sales', $branch);
 
-        $lead = Lead::factory()->forBranch($branch)->create([
+        $customer = Customer::factory()->forBranch($branch)->create([
             'assigned_user_id' => $salesOwner->id,
         ]);
         $task = Task::factory()->forUser($salesAssignee)->create([
-            'lead_id' => $lead->id,
+            'customer_id' => $customer->id,
         ]);
 
-        // Sales sở hữu Lead vẫn được xem task của Lead đó.
+        // Sales sở hữu Customer vẫn được xem task của Customer đó.
         $this->actingAs($salesOwner)
             ->get(route('tasks.show', $task))
             ->assertOk();
@@ -294,15 +294,15 @@ class TaskTest extends TestCase
         $branchB = Branch::factory()->create();
         $admin = $this->makeUser('super-admin');
         $sales = $this->makeUser('sales', $branchA);
-        $foreignLead = Lead::factory()->forBranch($branchB)->create();
+        $foreignLead = Customer::factory()->forBranch($branchB)->create();
 
         $this->actingAs($admin)
             ->from(route('tasks.create'))
             ->post(route('tasks.store'), $this->basePayload([
                 'assigned_user_id' => $sales->id,
-                'lead_id' => $foreignLead->id,
+                'customer_id' => $foreignLead->id,
             ]))
-            ->assertSessionHasErrors('lead_id');
+            ->assertSessionHasErrors('customer_id');
     }
 
     // ───────────────────── service injection / cross-branch defense ─────────────────────
@@ -426,23 +426,23 @@ class TaskTest extends TestCase
         $this->assertFalse($completedPast->is_overdue);
     }
 
-    // ───────────────────── lead cascade ─────────────────────
+    // ───────────────────── customer cascade ─────────────────────
 
     public function test_deleting_lead_cascades_to_its_tasks(): void
     {
         $branch = Branch::factory()->create();
         $sales = $this->makeUser('sales', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create();
+        $customer = Customer::factory()->forBranch($branch)->create();
 
-        Task::factory()->forUser($sales)->count(3)->create(['lead_id' => $lead->id, 'branch_id' => $branch->id]);
+        Task::factory()->forUser($sales)->count(3)->create(['customer_id' => $customer->id, 'branch_id' => $branch->id]);
 
         $this->assertSame(3, Task::withoutGlobalScope(BranchScope::class)
-            ->where('lead_id', $lead->id)->count());
+            ->where('customer_id', $customer->id)->count());
 
-        $lead->delete();
+        $customer->delete();
 
         $this->assertSame(0, Task::withoutGlobalScope(BranchScope::class)
-            ->where('lead_id', $lead->id)->count());
+            ->where('customer_id', $customer->id)->count());
     }
 
     // ───────────────────── filter ─────────────────────

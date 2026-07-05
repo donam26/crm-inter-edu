@@ -71,7 +71,7 @@ class RolePermissionSeeder extends Seeder
     {
         return [
             'dashboard.view',
-            'leads.view', 'leads.create', 'leads.update',
+            'customers.view', 'customers.create', 'customers.update',
             'contacts.view', 'contacts.create', 'contacts.update', 'contacts.delete',
             'activities.view', 'activities.create', 'activities.update', 'activities.delete',
             'tasks.view', 'tasks.create', 'tasks.update', 'tasks.delete',

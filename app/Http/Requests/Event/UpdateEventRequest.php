@@ -31,7 +31,7 @@ class UpdateEventRequest extends FormRequest
             'all_day' => ['boolean'],
             'reminder_at' => ['nullable', 'date', 'before_or_equal:starts_at'],
             'organizer_user_id' => ['required', 'integer', 'exists:users,id'],
-            'lead_id' => ['nullable', 'integer', 'exists:leads,id'],
+            'customer_id' => ['nullable', 'integer', 'exists:customers,id'],
             'attendee_ids' => ['nullable', 'array'],
             'attendee_ids.*' => ['integer', 'exists:users,id', 'distinct'],
         ];

@@ -9,7 +9,7 @@ class StoreContactRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('create', [Contact::class, $this->route('lead')]) ?? false;
+        return $this->user()?->can('create', [Contact::class, $this->route('customer')]) ?? false;
     }
 
     public function rules(): array

@@ -6,7 +6,7 @@ use App\Enums\EventStatus;
 use App\Enums\EventType;
 use App\Models\Branch;
 use App\Models\Event;
-use App\Models\Lead;
+use App\Models\Customer;
 use App\Models\Scopes\BranchScope;
 use App\Services\EventService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -23,7 +23,7 @@ use Tests\TestCase;
  * Phạm vi:
  *  - branch_id luôn lấy từ organizer
  *  - created_by = auth user
- *  - cross-branch guards (organizer, lead, attendees)
+ *  - cross-branch guards (organizer, customer, attendees)
  *  - attendee sync giữ pivot cũ, không tạo bản trùng
  *  - markDone / cancel guards
  *  - detectConflicts trả đúng các event chạm khoảng thời gian
@@ -58,7 +58,7 @@ class EventServiceTest extends TestCase
             'all_day' => false,
             'reminder_at' => null,
             'organizer_user_id' => $organizerId,
-            'lead_id' => null,
+            'customer_id' => null,
             'attendee_ids' => [],
         ], $extra);
     }
@@ -143,13 +143,13 @@ class EventServiceTest extends TestCase
         $branchB = Branch::factory()->create();
         $admin = $this->makeUser('super-admin');
         $organizer = $this->makeUser('sales', $branchA);
-        $foreignLead = Lead::factory()->forBranch($branchB)->create();
+        $foreignLead = Customer::factory()->forBranch($branchB)->create();
 
         Auth::login($admin);
 
         $this->expectException(ValidationException::class);
         $this->service->create($this->basePayload($organizer->id, [
-            'lead_id' => $foreignLead->id,
+            'customer_id' => $foreignLead->id,
         ]));
     }
 
@@ -431,7 +431,7 @@ class EventServiceTest extends TestCase
         $branchB = Branch::factory()->create();
         $admin = $this->makeUser('super-admin');
         $organizer = $this->makeUser('sales', $branchA);
-        $foreignLead = Lead::factory()->forBranch($branchB)->create();
+        $foreignLead = Customer::factory()->forBranch($branchB)->create();
 
         Auth::login($admin);
 
@@ -440,7 +440,7 @@ class EventServiceTest extends TestCase
 
         try {
             $this->service->create($this->basePayload($organizer->id, [
-                'lead_id' => $foreignLead->id,
+                'customer_id' => $foreignLead->id,
             ]));
         } catch (ValidationException $e) {
             $caught = $e;

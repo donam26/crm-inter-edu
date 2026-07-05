@@ -29,7 +29,7 @@ class Task extends Model
 
     protected $fillable = [
         'branch_id',
-        'lead_id',
+        'customer_id',
         'assigned_user_id',
         'created_by',
         'completed_by',
@@ -70,9 +70,9 @@ class Task extends Model
         return $this->belongsTo(Branch::class);
     }
 
-    public function lead(): BelongsTo
+    public function customer(): BelongsTo
     {
-        return $this->belongsTo(Lead::class);
+        return $this->belongsTo(Customer::class);
     }
 
     public function assignee(): BelongsTo

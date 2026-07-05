@@ -2,36 +2,33 @@
 
 namespace App\Models;
 
-use App\Enums\LeadStatus;
-use App\Enums\SchoolLevel;
+use App\Enums\CustomerStatus;
 use App\Models\Scopes\BranchScope;
-use Database\Factories\LeadFactory;
+use Database\Factories\CustomerFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class Lead extends Model
+class Customer extends Model
 {
-    /** @use HasFactory<LeadFactory> */
+    /** @use HasFactory<CustomerFactory> */
     use HasFactory;
 
     protected $fillable = [
         'branch_id',
         'assigned_user_id',
-        'school_name',
-        'school_level',
-        'student_size',
+        'name',
+        'phone',
+        'email',
         'address',
         'status',
         'note',
     ];
 
     protected $casts = [
-        'status' => LeadStatus::class,
-        'school_level' => SchoolLevel::class,
-        'student_size' => 'integer',
+        'status' => CustomerStatus::class,
     ];
 
     protected static function booted(): void
@@ -72,8 +69,8 @@ class Lead extends Model
     }
 
     /**
-     * 1 Lead = 1 Deal (one-to-one). Quan hệ này được DB enforce qua
-     * `unique` trên `deals.lead_id`.
+     * 1 Customer = 1 Deal (one-to-one). Quan hệ này được DB enforce qua
+     * `unique` trên `deals.customer_id`.
      */
     public function deal(): HasOne
     {

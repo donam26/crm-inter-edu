@@ -85,8 +85,8 @@
                         @elseif ($event->location)
                             <span>· {{ $event->location }}</span>
                         @endif
-                        @if ($event->lead)
-                            <span>· Lead: <a href="{{ route('leads.show', $event->lead) }}" class="hover:underline">{{ $event->lead->school_name }}</a></span>
+                        @if ($event->customer)
+                            <span>· Customer: <a href="{{ route('customers.show', $event->customer) }}" class="hover:underline">{{ $event->customer->name }}</a></span>
                         @endif
                     </div>
                 </td>

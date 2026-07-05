@@ -3,10 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\Branch;
-use App\Models\Lead;
+use App\Models\Customer;
 use Illuminate\Database\Seeder;
 
-class LeadSeeder extends Seeder
+class CustomerSeeder extends Seeder
 {
     public function run(): void
     {
@@ -16,9 +16,9 @@ class LeadSeeder extends Seeder
             return;
         }
 
-        // Trải đều ~20 lead trên các branch hiện có.
+        // Trải đều ~20 customer trên các branch hiện có.
         foreach ($branches as $branch) {
-            Lead::factory()->count(7)->forBranch($branch)->create();
+            Customer::factory()->count(7)->forBranch($branch)->create();
         }
     }
 }

@@ -6,14 +6,15 @@ use App\Enums\DealStage;
 use App\Enums\InvoiceStatus;
 use App\Models\Activity;
 use App\Models\Contact;
+use App\Models\Customer;
 use App\Models\Deal;
 use App\Models\Event;
 use App\Models\Invoice;
-use App\Models\Lead;
 use App\Models\Payment;
 use App\Models\Scopes\BranchScope;
 use App\Models\Task;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Collection;
 
 class DashboardService
 {
@@ -21,14 +22,14 @@ class DashboardService
      * Build dashboard statistics scoped per role.
      *
      * @return array{
-     *   total_leads: int,
-     *   leads_by_status: array<string, int>,
+     *   total_customers: int,
+     *   customers_by_status: array<string, int>,
      *   total_contacts: int,
      *   activities_last_7_days: int,
-     *   leads_by_branch?: array<int, int>,
-     *   my_overdue_tasks: \Illuminate\Database\Eloquent\Collection,
-     *   my_upcoming_tasks: \Illuminate\Database\Eloquent\Collection,
-     *   my_upcoming_events: \Illuminate\Database\Eloquent\Collection,
+     *   customers_by_branch?: array<int, int>,
+     *   my_overdue_tasks: Collection,
+     *   my_upcoming_tasks: Collection,
+     *   my_upcoming_events: Collection,
      *   pipeline_value: int,
      *   open_deals_count: int,
      *   won_revenue_this_month: int,
@@ -40,7 +41,7 @@ class DashboardService
      */
     public function getStatsForUser(User $user): array
     {
-        $leadQuery = Lead::query();
+        $customerQuery = Customer::query();
         $contactQuery = Contact::query();
         $activityQuery = Activity::query();
 
@@ -49,11 +50,11 @@ class DashboardService
         $paymentQuery = Payment::query();
 
         if ($user->hasRole('sales')) {
-            $leadQuery->where('assigned_user_id', $user->id);
+            $customerQuery->where('assigned_user_id', $user->id);
 
-            $assignedLeadIds = (clone $leadQuery)->select('id');
-            $contactQuery->whereIn('lead_id', $assignedLeadIds);
-            $activityQuery->whereIn('lead_id', $assignedLeadIds);
+            $assignedCustomerIds = (clone $customerQuery)->select('id');
+            $contactQuery->whereIn('customer_id', $assignedCustomerIds);
+            $activityQuery->whereIn('customer_id', $assignedCustomerIds);
 
             // Sales chỉ thấy doanh thu của deal mình owner.
             $dealQuery->where('owner_user_id', $user->id);
@@ -67,9 +68,9 @@ class DashboardService
         $monthEnd = now()->endOfMonth()->toDateString();
 
         $stats = [
-            'total_leads' => (clone $leadQuery)->count(),
+            'total_customers' => (clone $customerQuery)->count(),
 
-            'leads_by_status' => (clone $leadQuery)
+            'customers_by_status' => (clone $customerQuery)
                 ->selectRaw('status, COUNT(*) as c')
                 ->groupBy('status')
                 ->pluck('c', 'status')
@@ -83,7 +84,7 @@ class DashboardService
                 ->count(),
 
             'my_overdue_tasks' => Task::query()
-                ->with('lead')
+                ->with('customer')
                 ->where('assigned_user_id', $user->id)
                 ->overdue()
                 ->orderBy('due_at')
@@ -91,7 +92,7 @@ class DashboardService
                 ->get(),
 
             'my_upcoming_tasks' => Task::query()
-                ->with('lead')
+                ->with('customer')
                 ->where('assigned_user_id', $user->id)
                 ->upcoming(24)
                 ->orderBy('due_at')
@@ -99,7 +100,7 @@ class DashboardService
                 ->get(),
 
             'my_upcoming_events' => Event::query()
-                ->with(['organizer', 'lead'])
+                ->with(['organizer', 'customer'])
                 ->upcoming(48)
                 ->where(function ($q) use ($user) {
                     $q->where('organizer_user_id', $user->id)
@@ -150,7 +151,7 @@ class DashboardService
         ];
 
         if ($user->hasRole('super-admin')) {
-            $stats['leads_by_branch'] = Lead::withoutGlobalScope(BranchScope::class)
+            $stats['customers_by_branch'] = Customer::withoutGlobalScope(BranchScope::class)
                 ->selectRaw('branch_id, COUNT(*) as c')
                 ->groupBy('branch_id')
                 ->pluck('c', 'branch_id')

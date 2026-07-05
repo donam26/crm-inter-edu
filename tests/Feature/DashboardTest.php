@@ -5,7 +5,7 @@ namespace Tests\Feature;
 use App\Models\Activity;
 use App\Models\Branch;
 use App\Models\Contact;
-use App\Models\Lead;
+use App\Models\Customer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\InteractsWithRbac;
 use Tests\TestCase;
@@ -36,8 +36,8 @@ class DashboardTest extends TestCase
         $b1 = Branch::factory()->create();
         $b2 = Branch::factory()->create();
 
-        Lead::factory()->forBranch($b1)->count(2)->create();
-        Lead::factory()->forBranch($b2)->count(3)->create();
+        Customer::factory()->forBranch($b1)->count(2)->create();
+        Customer::factory()->forBranch($b2)->count(3)->create();
 
         $response = $this->actingAs($admin)
             ->get(route('dashboard'))
@@ -45,10 +45,10 @@ class DashboardTest extends TestCase
 
         $stats = $response->viewData('stats');
 
-        $this->assertSame(5, $stats['total_leads']);
-        $this->assertArrayHasKey('leads_by_branch', $stats);
-        $this->assertSame(2, $stats['leads_by_branch'][$b1->id]);
-        $this->assertSame(3, $stats['leads_by_branch'][$b2->id]);
+        $this->assertSame(5, $stats['total_customers']);
+        $this->assertArrayHasKey('customers_by_branch', $stats);
+        $this->assertSame(2, $stats['customers_by_branch'][$b1->id]);
+        $this->assertSame(3, $stats['customers_by_branch'][$b2->id]);
     }
 
     // ───────────────────── branch-manager ─────────────────────
@@ -59,8 +59,8 @@ class DashboardTest extends TestCase
         $branchB = Branch::factory()->create();
         $mgr = $this->makeUser('branch-manager', $branchA);
 
-        Lead::factory()->forBranch($branchA)->count(3)->create();
-        Lead::factory()->forBranch($branchB)->count(7)->create();
+        Customer::factory()->forBranch($branchA)->count(3)->create();
+        Customer::factory()->forBranch($branchB)->count(7)->create();
 
         $response = $this->actingAs($mgr)
             ->get(route('dashboard'))
@@ -68,8 +68,8 @@ class DashboardTest extends TestCase
 
         $stats = $response->viewData('stats');
 
-        $this->assertSame(3, $stats['total_leads']);
-        $this->assertArrayNotHasKey('leads_by_branch', $stats);
+        $this->assertSame(3, $stats['total_customers']);
+        $this->assertArrayNotHasKey('customers_by_branch', $stats);
     }
 
     // ───────────────────── sales ─────────────────────
@@ -80,13 +80,13 @@ class DashboardTest extends TestCase
         $sales1 = $this->makeUser('sales', $branch);
         $sales2 = $this->makeUser('sales', $branch);
 
-        Lead::factory()->forBranch($branch)->count(2)->create([
+        Customer::factory()->forBranch($branch)->count(2)->create([
             'assigned_user_id' => $sales1->id,
         ]);
-        Lead::factory()->forBranch($branch)->count(5)->create([
+        Customer::factory()->forBranch($branch)->count(5)->create([
             'assigned_user_id' => $sales2->id,
         ]);
-        Lead::factory()->forBranch($branch)->count(3)->create([
+        Customer::factory()->forBranch($branch)->count(3)->create([
             'assigned_user_id' => null,
         ]);
 
@@ -96,11 +96,11 @@ class DashboardTest extends TestCase
 
         $stats = $response->viewData('stats');
 
-        $this->assertSame(2, $stats['total_leads']);
-        $this->assertArrayNotHasKey('leads_by_branch', $stats);
+        $this->assertSame(2, $stats['total_customers']);
+        $this->assertArrayNotHasKey('customers_by_branch', $stats);
     }
 
-    // ───────────────────── reflect new lead ─────────────────────
+    // ───────────────────── reflect new customer ─────────────────────
 
     public function test_dashboard_reflects_new_lead(): void
     {
@@ -110,14 +110,14 @@ class DashboardTest extends TestCase
         $response = $this->actingAs($mgr)
             ->get(route('dashboard'))
             ->assertOk();
-        $this->assertSame(0, $response->viewData('stats')['total_leads']);
+        $this->assertSame(0, $response->viewData('stats')['total_customers']);
 
-        Lead::factory()->forBranch($branch)->create();
+        Customer::factory()->forBranch($branch)->create();
 
         $response = $this->actingAs($mgr)
             ->get(route('dashboard'))
             ->assertOk();
-        $this->assertSame(1, $response->viewData('stats')['total_leads']);
+        $this->assertSame(1, $response->viewData('stats')['total_customers']);
     }
 
     // ───────────────────── activities last 7 days ─────────────────────
@@ -126,13 +126,13 @@ class DashboardTest extends TestCase
     {
         $branch = Branch::factory()->create();
         $mgr = $this->makeUser('branch-manager', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create();
+        $customer = Customer::factory()->forBranch($branch)->create();
 
-        Activity::factory()->forLead($lead)->create([
+        Activity::factory()->forLead($customer)->create([
             'user_id' => $mgr->id,
             'happened_at' => now()->subDays(2),
         ]);
-        Activity::factory()->forLead($lead)->create([
+        Activity::factory()->forLead($customer)->create([
             'user_id' => $mgr->id,
             'happened_at' => now()->subDays(10),
         ]);
@@ -154,8 +154,8 @@ class DashboardTest extends TestCase
         $admin = $this->makeUser('super-admin');
         $mgr = $this->makeUser('branch-manager', $branchA);
 
-        $leadA = Lead::factory()->forBranch($branchA)->create();
-        $leadB = Lead::factory()->forBranch($branchB)->create();
+        $leadA = Customer::factory()->forBranch($branchA)->create();
+        $leadB = Customer::factory()->forBranch($branchB)->create();
 
         Contact::factory()->forLead($leadA)->count(3)->create();
         Contact::factory()->forLead($leadB)->count(5)->create();

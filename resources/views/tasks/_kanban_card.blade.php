@@ -35,10 +35,10 @@
         </div>
     @endif
 
-    @if ($task->lead)
+    @if ($task->customer)
         <div class="text-xs text-gray-500 mt-2">
-            <a href="{{ route('leads.show', $task->lead) }}" class="hover:underline">
-                {{ $task->lead->school_name }}
+            <a href="{{ route('customers.show', $task->customer) }}" class="hover:underline">
+                {{ $task->customer->name }}
             </a>
         </div>
     @endif

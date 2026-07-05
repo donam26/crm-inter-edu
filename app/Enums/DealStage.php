@@ -4,7 +4,7 @@ namespace App\Enums;
 
 enum DealStage: string
 {
-    case Lead = 'lead';
+    case Customer = 'customer';
     case Proposal = 'proposal';
     case Negotiation = 'negotiation';
     case ClosedWon = 'closed_won';
@@ -13,7 +13,7 @@ enum DealStage: string
     public function label(): string
     {
         return match ($this) {
-            self::Lead => 'Mới',
+            self::Customer => 'Mới',
             self::Proposal => 'Chào hàng',
             self::Negotiation => 'Đàm phán',
             self::ClosedWon => 'Thắng',
@@ -24,7 +24,7 @@ enum DealStage: string
     public function badgeVariant(): string
     {
         return match ($this) {
-            self::Lead => 'secondary',
+            self::Customer => 'secondary',
             self::Proposal => 'primary',
             self::Negotiation => 'warning',
             self::ClosedWon => 'success',

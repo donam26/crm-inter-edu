@@ -8,7 +8,7 @@ use App\Http\Requests\Event\StoreEventRequest;
 use App\Http\Requests\Event\UpdateEventRequest;
 use App\Models\Branch;
 use App\Models\Event;
-use App\Models\Lead;
+use App\Models\Customer;
 use App\Models\User;
 use App\Services\EventService;
 use Illuminate\Http\Request;
@@ -24,7 +24,7 @@ class EventController extends Controller
         $this->authorize('viewAny', Event::class);
 
         $filters = $request->only([
-            'status', 'type', 'organizer_user_id', 'lead_id',
+            'status', 'type', 'organizer_user_id', 'customer_id',
             'branch_id', 'from', 'to', 'q',
         ]);
 
@@ -62,7 +62,7 @@ class EventController extends Controller
         $to = $cursor->copy()->endOfMonth()->endOfWeek();
 
         $events = Event::query()
-            ->with(['organizer', 'lead'])
+            ->with(['organizer', 'customer'])
             ->between($from, $to)
             ->when($request->user()?->hasRole('sales'),
                 fn ($q) => $q->where(function ($q2) use ($request) {
@@ -91,8 +91,8 @@ class EventController extends Controller
         return view('events.create', [
             'types' => EventType::cases(),
             'branchUsers' => $this->branchUsers($request->user()),
-            'leads' => $this->branchLeads($request->user()),
-            'preselectedLeadId' => $request->integer('lead_id') ?: null,
+            'customers' => $this->branchCustomers($request->user()),
+            'preselectedCustomerId' => $request->integer('customer_id') ?: null,
         ]);
     }
 
@@ -125,7 +125,7 @@ class EventController extends Controller
     public function show(Event $event)
     {
         $this->authorize('view', $event);
-        $event->load(['branch', 'organizer', 'creator', 'lead', 'attendees']);
+        $event->load(['branch', 'organizer', 'creator', 'customer', 'attendees']);
 
         return view('events.show', [
             'event' => $event,
@@ -148,7 +148,7 @@ class EventController extends Controller
             'statuses' => EventStatus::cases(),
             'types' => EventType::cases(),
             'branchUsers' => $this->branchUsers($request->user(), $event->branch_id),
-            'leads' => $this->branchLeads($request->user(), $event->branch_id),
+            'customers' => $this->branchCustomers($request->user(), $event->branch_id),
             'attendeeIds' => $event->attendees->pluck('id')->all(),
         ]);
     }
@@ -247,7 +247,7 @@ class EventController extends Controller
             ->get();
     }
 
-    private function branchLeads(?User $user, ?int $forceBranchId = null)
+    private function branchCustomers(?User $user, ?int $forceBranchId = null)
     {
         if ($user === null) {
             return collect();
@@ -255,12 +255,12 @@ class EventController extends Controller
 
         $branchId = $forceBranchId ?? $user->branch_id;
 
-        $query = Lead::query()->orderBy('school_name');
+        $query = Customer::query()->orderBy('name');
 
         if ($branchId !== null) {
             $query->where('branch_id', $branchId);
         }
 
-        return $query->limit(500)->get(['id', 'school_name', 'branch_id']);
+        return $query->limit(500)->get(['id', 'name', 'branch_id']);
     }
 }

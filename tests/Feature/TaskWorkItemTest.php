@@ -48,7 +48,7 @@ class TaskWorkItemTest extends TestCase
         $owner = $this->makeUser('sales', $branch);
         $task = Task::factory()->forUser($owner)->create();
 
-        // Cùng chi nhánh nhưng KHÔNG phải assignee/creator/phụ trách lead và
+        // Cùng chi nhánh nhưng KHÔNG phải assignee/creator/phụ trách customer và
         // không có view-all → không mở được task thì cũng không bình luận được.
         $this->actingAs($bystander)
             ->post(route('tasks.comments.store', $task), ['body' => 'ngoài phạm vi'])

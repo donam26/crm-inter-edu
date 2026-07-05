@@ -5,7 +5,7 @@ namespace Database\Factories;
 use App\Enums\TaskPriority;
 use App\Enums\TaskStatus;
 use App\Enums\TaskType;
-use App\Models\Lead;
+use App\Models\Customer;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -49,7 +49,7 @@ class TaskFactory extends Factory
 
                 return $u?->branch_id;
             },
-            'lead_id' => null,
+            'customer_id' => null,
             'assigned_user_id' => $assigneeId,
             'created_by' => $assigneeId,
             'completed_by' => $isCompleted ? $assigneeId : null,
@@ -65,18 +65,18 @@ class TaskFactory extends Factory
         ];
     }
 
-    public function forLead(Lead $lead): self
+    public function forLead(Customer $customer): self
     {
-        return $this->state(function () use ($lead) {
+        return $this->state(function () use ($customer) {
             $user = User::query()
-                ->where('branch_id', $lead->branch_id)
+                ->where('branch_id', $customer->branch_id)
                 ->inRandomOrder()
                 ->first()
-                ?? User::factory()->create(['branch_id' => $lead->branch_id]);
+                ?? User::factory()->create(['branch_id' => $customer->branch_id]);
 
             return [
-                'lead_id' => $lead->id,
-                'branch_id' => $lead->branch_id,
+                'customer_id' => $customer->id,
+                'branch_id' => $customer->branch_id,
                 'assigned_user_id' => $user->id,
                 'created_by' => $user->id,
             ];

@@ -1,7 +1,7 @@
 <x-layouts.app title="Chi tiết hoạt động" :breadcrumbs="[
     ['label' => 'Dashboard', 'url' => route('dashboard')],
-    ['label' => 'Leads', 'url' => route('leads.index')],
-    ['label' => $activity->lead->school_name ?? 'Lead', 'url' => route('leads.show', $activity->lead_id)],
+    ['label' => 'Khách hàng', 'url' => route('customers.index')],
+    ['label' => $activity->customer->name ?? 'Customer', 'url' => route('customers.show', $activity->customer_id)],
     ['label' => $activity->subject],
 ]">
     <div class="max-w-3xl">
@@ -38,10 +38,10 @@
                     <dd class="text-gray-900 mt-0.5">{{ $activity->user?->name ?? '—' }}</dd>
                 </div>
                 <div>
-                    <dt class="text-gray-500">Lead</dt>
+                    <dt class="text-gray-500">Khách hàng</dt>
                     <dd class="mt-0.5">
-                        <a href="{{ route('leads.show', $activity->lead_id) }}" class="text-brand-600 hover:underline">
-                            {{ $activity->lead?->school_name }}
+                        <a href="{{ route('customers.show', $activity->customer_id) }}" class="text-brand-600 hover:underline">
+                            {{ $activity->customer?->name }}
                         </a>
                     </dd>
                 </div>
@@ -57,8 +57,8 @@
         </x-card>
 
         <div class="mt-6">
-            <a href="{{ route('leads.show', $activity->lead_id) }}" class="inline-flex items-center gap-1 text-sm text-brand-600 hover:underline">
-                <x-icon name="arrow-left" class="h-4 w-4" /> Quay lại Lead
+            <a href="{{ route('customers.show', $activity->customer_id) }}" class="inline-flex items-center gap-1 text-sm text-brand-600 hover:underline">
+                <x-icon name="arrow-left" class="h-4 w-4" /> Quay lại khách hàng
             </a>
         </div>
     </div>

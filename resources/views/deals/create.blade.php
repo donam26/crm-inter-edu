@@ -2,19 +2,19 @@
 <form method="POST" action="{{ route('deals.store') }}">
     @csrf
 
-    <x-select name="lead_id" label="Lead" placeholder="— Chọn lead —" required>
-        @foreach($leads as $l)
-            <option value="{{ $l->id }}" @selected(old('lead_id', $preselectedLeadId) == $l->id)>
-                {{ $l->school_name }}
+    <x-select name="customer_id" label="Customer" placeholder="— Chọn customer —" required>
+        @foreach($customers as $l)
+            <option value="{{ $l->id }}" @selected(old('customer_id', $preselectedLeadId) == $l->id)>
+                {{ $l->name }}
             </option>
         @endforeach
     </x-select>
-    <p class="-mt-3 mb-4 text-xs text-gray-500">Chỉ hiện những lead chưa có deal (1 lead = 1 deal).</p>
+    <p class="-mt-3 mb-4 text-xs text-gray-500">Chỉ hiện những khách hàng chưa có deal (1 khách hàng = 1 deal).</p>
 
-    <x-input name="title" label="Tiêu đề (tùy chọn — mặc định lấy theo tên trường)" />
+    <x-input name="title" label="Tiêu đề (tùy chọn — mặc định lấy theo tên khách hàng)" />
 
     @if($branchUsers->isNotEmpty())
-        <x-select name="owner_user_id" label="Người phụ trách" placeholder="— Mặc định lấy theo lead.assigned_user_id —">
+        <x-select name="owner_user_id" label="Người phụ trách" placeholder="— Mặc định lấy theo người phụ trách khách hàng —">
             @foreach($branchUsers as $u)
                 <option value="{{ $u->id }}" @selected(old('owner_user_id') == $u->id)>{{ $u->name }}</option>
             @endforeach

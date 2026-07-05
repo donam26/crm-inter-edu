@@ -29,15 +29,15 @@ class PermissionCatalog
                     'dashboard.view' => 'Xem dashboard',
                 ],
             ],
-            'leads' => [
-                'label' => 'Leads',
+            'customers' => [
+                'label' => 'Khách hàng',
                 'permissions' => [
-                    'leads.view' => 'Xem lead',
-                    'leads.view-all' => 'Xem mọi lead trong chi nhánh',
-                    'leads.create' => 'Tạo lead',
-                    'leads.update' => 'Sửa lead',
-                    'leads.delete' => 'Xóa lead',
-                    'leads.assign' => 'Phân công lead',
+                    'customers.view' => 'Xem khách hàng',
+                    'customers.view-all' => 'Xem mọi khách hàng trong chi nhánh',
+                    'customers.create' => 'Tạo khách hàng',
+                    'customers.update' => 'Sửa khách hàng',
+                    'customers.delete' => 'Xóa khách hàng',
+                    'customers.assign' => 'Phân công khách hàng',
                 ],
             ],
             'contacts' => [

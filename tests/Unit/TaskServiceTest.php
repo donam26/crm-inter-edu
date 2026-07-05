@@ -6,7 +6,7 @@ use App\Enums\TaskPriority;
 use App\Enums\TaskStatus;
 use App\Enums\TaskType;
 use App\Models\Branch;
-use App\Models\Lead;
+use App\Models\Customer;
 use App\Models\Scopes\BranchScope;
 use App\Models\Task;
 use App\Services\TaskService;
@@ -23,7 +23,7 @@ use Tests\TestCase;
  * Phạm vi: kiểm chứng business invariants ở Service layer:
  *  - branch_id luôn lấy từ assignee (không từ input)
  *  - created_by = auth user
- *  - cross-branch guards (assignee, lead)
+ *  - cross-branch guards (assignee, customer)
  *  - completion atomicity (status + completed_at + completed_by đồng bộ)
  *  - reopen clears completion metadata
  *  - rollback transaction khi exception
@@ -51,7 +51,7 @@ class TaskServiceTest extends TestCase
             'status' => TaskStatus::Pending->value,
             'due_at' => now()->addDay(),
             'assigned_user_id' => $assigneeId,
-            'lead_id' => null,
+            'customer_id' => null,
             'reminder_enabled' => false,
             'remind_at' => null,
         ], $extra);
@@ -142,13 +142,13 @@ class TaskServiceTest extends TestCase
         $branchB = Branch::factory()->create();
         $admin = $this->makeUser('super-admin');
         $sales = $this->makeUser('sales', $branchA);
-        $foreignLead = Lead::factory()->forBranch($branchB)->create();
+        $foreignLead = Customer::factory()->forBranch($branchB)->create();
 
         Auth::login($admin);
 
         $this->expectException(ValidationException::class);
         $this->service->create($this->basePayload($sales->id, [
-            'lead_id' => $foreignLead->id,
+            'customer_id' => $foreignLead->id,
         ]));
     }
 
@@ -327,7 +327,7 @@ class TaskServiceTest extends TestCase
         $branchB = Branch::factory()->create();
         $admin = $this->makeUser('super-admin');
         $sales = $this->makeUser('sales', $branchA);
-        $foreignLead = Lead::factory()->forBranch($branchB)->create();
+        $foreignLead = Customer::factory()->forBranch($branchB)->create();
 
         Auth::login($admin);
 
@@ -336,7 +336,7 @@ class TaskServiceTest extends TestCase
 
         try {
             $this->service->create($this->basePayload($sales->id, [
-                'lead_id' => $foreignLead->id,
+                'customer_id' => $foreignLead->id,
             ]));
         } catch (ValidationException $e) {
             $caught = $e;

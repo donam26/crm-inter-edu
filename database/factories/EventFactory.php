@@ -5,7 +5,7 @@ namespace Database\Factories;
 use App\Enums\EventStatus;
 use App\Enums\EventType;
 use App\Models\Event;
-use App\Models\Lead;
+use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
@@ -44,7 +44,7 @@ class EventFactory extends Factory
             },
             'organizer_user_id' => $organizerId,
             'created_by' => $organizerId,
-            'lead_id' => null,
+            'customer_id' => null,
             'title' => $this->faker->sentence(4),
             'description' => $this->faker->optional()->paragraph(),
             'type' => $this->faker->randomElement(EventType::values()),
@@ -68,18 +68,18 @@ class EventFactory extends Factory
         ]);
     }
 
-    public function forLead(Lead $lead): self
+    public function forLead(Customer $customer): self
     {
-        return $this->state(function () use ($lead) {
+        return $this->state(function () use ($customer) {
             $u = User::query()
-                ->where('branch_id', $lead->branch_id)
+                ->where('branch_id', $customer->branch_id)
                 ->inRandomOrder()
                 ->first()
-                ?? User::factory()->create(['branch_id' => $lead->branch_id]);
+                ?? User::factory()->create(['branch_id' => $customer->branch_id]);
 
             return [
-                'lead_id' => $lead->id,
-                'branch_id' => $lead->branch_id,
+                'customer_id' => $customer->id,
+                'branch_id' => $customer->branch_id,
                 'organizer_user_id' => $u->id,
                 'created_by' => $u->id,
             ];

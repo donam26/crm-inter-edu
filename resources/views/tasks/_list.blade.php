@@ -13,11 +13,11 @@
                 <a href="{{ route('tasks.show', $task) }}" class="font-medium text-brand-600 hover:underline">
                     {{ $task->title }}
                 </a>
-                @if ($task->lead)
+                @if ($task->customer)
                     <div class="text-xs text-gray-500 mt-0.5">
-                        Lead:
-                        <a href="{{ route('leads.show', $task->lead) }}" class="hover:underline">
-                            {{ $task->lead->school_name }}
+                        Khách hàng:
+                        <a href="{{ route('customers.show', $task->customer) }}" class="hover:underline">
+                            {{ $task->customer->name }}
                         </a>
                     </div>
                 @endif

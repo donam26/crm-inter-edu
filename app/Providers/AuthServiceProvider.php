@@ -9,7 +9,7 @@ use App\Models\Deal;
 use App\Models\DealItem;
 use App\Models\Event;
 use App\Models\Invoice;
-use App\Models\Lead;
+use App\Models\Customer;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Role;
@@ -22,7 +22,7 @@ use App\Policies\DealItemPolicy;
 use App\Policies\DealPolicy;
 use App\Policies\EventPolicy;
 use App\Policies\InvoicePolicy;
-use App\Policies\LeadPolicy;
+use App\Policies\CustomerPolicy;
 use App\Policies\PaymentPolicy;
 use App\Policies\ProductPolicy;
 use App\Policies\RolePolicy;
@@ -42,7 +42,7 @@ class AuthServiceProvider extends ServiceProvider
         Branch::class => BranchPolicy::class,
         User::class => UserPolicy::class,
         Role::class => RolePolicy::class,
-        Lead::class => LeadPolicy::class,
+        Customer::class => CustomerPolicy::class,
         Contact::class => ContactPolicy::class,
         Activity::class => ActivityPolicy::class,
         Task::class => TaskPolicy::class,

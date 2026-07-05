@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Models\Contact;
-use App\Models\Lead;
+use App\Models\Customer;
 use App\Models\User;
 use App\Policies\Concerns\ChecksBranchOwnership;
 
@@ -18,31 +18,31 @@ class ContactPolicy
 
     public function view(User $user, Contact $contact): bool
     {
-        // Truy cập contact đi theo quyền truy cập Lead cha (own/all qua leads.view-all).
+        // Truy cập contact đi theo quyền truy cập Customer cha (own/all qua customers.view-all).
         return $user->can('contacts.view')
-            && app(LeadPolicy::class)->view($user, $contact->lead);
+            && app(CustomerPolicy::class)->view($user, $contact->customer);
     }
 
-    public function create(User $user, ?Lead $lead = null): bool
+    public function create(User $user, ?Customer $customer = null): bool
     {
         if (! $user->can('contacts.create')) {
             return false;
         }
 
-        return $lead instanceof Lead
-            ? app(LeadPolicy::class)->update($user, $lead)
+        return $customer instanceof Customer
+            ? app(CustomerPolicy::class)->update($user, $customer)
             : true;
     }
 
     public function update(User $user, Contact $contact): bool
     {
         return $user->can('contacts.update')
-            && app(LeadPolicy::class)->update($user, $contact->lead);
+            && app(CustomerPolicy::class)->update($user, $contact->customer);
     }
 
     public function delete(User $user, Contact $contact): bool
     {
         return $user->can('contacts.delete')
-            && app(LeadPolicy::class)->update($user, $contact->lead);
+            && app(CustomerPolicy::class)->update($user, $contact->customer);
     }
 }

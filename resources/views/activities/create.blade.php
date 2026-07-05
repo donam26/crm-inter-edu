@@ -1,5 +1,5 @@
 {{-- Modal content (nạp qua AJAX). Không bọc layout. --}}
-<form method="POST" action="{{ route('leads.activities.store', $lead) }}">
+<form method="POST" action="{{ route('customers.activities.store', $customer) }}">
     @csrf
 
     <x-select name="type" label="Loại" required>

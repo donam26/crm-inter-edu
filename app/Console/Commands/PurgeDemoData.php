@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
  * production đã lỡ chạy `db:seed`). "Demo" được nhận diện chắc chắn qua:
  *  - User có email @inter-edu.local (BranchUserSeeder + SuperAdminSeeder).
  *  - Sản phẩm mẫu theo bộ mã catalog của ProductSeeder.
- * Cùng toàn bộ lead/deal/task/event/hoá đơn/... GẮN VỚI user demo (hoặc lead
+ * Cùng toàn bộ customer/deal/task/event/hoá đơn/... GẮN VỚI user demo (hoặc customer
  * demo). KHÔNG đụng tới: user thật, chi nhánh, permission/role, hay bất kỳ bản
  * ghi nào của người dùng thật.
  *
@@ -54,34 +54,34 @@ class PurgeDemoData extends Command
             : array_values(array_diff($demoUserIds, $superAdminIds));
 
         // Chi nhánh demo = chi nhánh có ít nhất một user demo. Dùng để bắt cả
-        // lead demo CHƯA gán ai (assigned_user_id null) mà scope-theo-user bỏ sót.
+        // customer demo CHƯA gán ai (assigned_user_id null) mà scope-theo-user bỏ sót.
         $demoBranchIds = DB::table('users')
             ->whereIn('id', $demoUserIds)
             ->whereNotNull('branch_id')
             ->distinct()->pluck('branch_id')->all();
 
         // Chụp trước tập id cha để thứ tự xoá không làm sai lệch truy vấn con.
-        // Mọi bản ghi nghiệp vụ "chạm" tới user demo hoặc lead demo đều được gom.
-        // Lead demo: thuộc chi nhánh demo VÀ không gán cho user thật (giữ an toàn
-        // nếu người dùng thật lỡ được gán lead trong chi nhánh demo).
-        $leadIds = DB::table('leads')
+        // Mọi bản ghi nghiệp vụ "chạm" tới user demo hoặc customer demo đều được gom.
+        // Customer demo: thuộc chi nhánh demo VÀ không gán cho user thật (giữ an toàn
+        // nếu người dùng thật lỡ được gán customer trong chi nhánh demo).
+        $customerIds = DB::table('customers')
             ->whereIn('branch_id', $demoBranchIds ?: [0])
             ->where(fn ($q) => $q->whereNull('assigned_user_id')->orWhereIn('assigned_user_id', $demoUserIds))
             ->pluck('id')->all();
         $taskIds = DB::table('tasks')
             ->whereIn('created_by', $demoUserIds)
             ->orWhereIn('assigned_user_id', $demoUserIds)
-            ->orWhereIn('lead_id', $leadIds ?: [0])
+            ->orWhereIn('customer_id', $customerIds ?: [0])
             ->pluck('id')->all();
         $eventIds = DB::table('events')
             ->whereIn('created_by', $demoUserIds)
             ->orWhereIn('organizer_user_id', $demoUserIds)
-            ->orWhereIn('lead_id', $leadIds ?: [0])
+            ->orWhereIn('customer_id', $customerIds ?: [0])
             ->pluck('id')->all();
         $dealIds = DB::table('deals')
             ->whereIn('created_by', $demoUserIds)
             ->orWhereIn('owner_user_id', $demoUserIds)
-            ->orWhereIn('lead_id', $leadIds ?: [0])
+            ->orWhereIn('customer_id', $customerIds ?: [0])
             ->pluck('id')->all();
         $invoiceIds = DB::table('invoices')
             ->whereIn('created_by', $demoUserIds)
@@ -106,9 +106,9 @@ class PurgeDemoData extends Command
             ['invoices', DB::table('invoices')->whereIn('id', $safe($invoiceIds))],
             ['deal_items', DB::table('deal_items')->whereIn('deal_id', $safe($dealIds))],
             ['deals', DB::table('deals')->whereIn('id', $safe($dealIds))],
-            ['activities', DB::table('activities')->whereIn('user_id', $demoUserIds)->orWhereIn('lead_id', $safe($leadIds))],
-            ['contacts', DB::table('contacts')->whereIn('lead_id', $safe($leadIds))],
-            ['leads', DB::table('leads')->whereIn('id', $safe($leadIds))],
+            ['activities', DB::table('activities')->whereIn('user_id', $demoUserIds)->orWhereIn('customer_id', $safe($customerIds))],
+            ['contacts', DB::table('contacts')->whereIn('customer_id', $safe($customerIds))],
+            ['customers', DB::table('customers')->whereIn('id', $safe($customerIds))],
             ['products', DB::table('products')->whereIn('id', $safe($productIds))],
             ['model_has_roles', DB::table('model_has_roles')->where('model_type', (new User)->getMorphClass())->whereIn('model_id', $safe($deletableUserIds))],
             ['users', DB::table('users')->whereIn('id', $safe($deletableUserIds))],

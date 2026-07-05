@@ -42,11 +42,11 @@
         @endforeach
     </x-select>
 
-    <x-select name="lead_id" label="Lead liên quan" placeholder="— Không gắn Lead —">
-        @foreach ($leads as $lead)
-            <option value="{{ $lead->id }}"
-                @selected((string) old('lead_id', $task->lead_id) === (string) $lead->id)>
-                {{ $lead->school_name }}
+    <x-select name="customer_id" label="Customer liên quan" placeholder="— Không gắn Customer —">
+        @foreach ($customers as $customer)
+            <option value="{{ $customer->id }}"
+                @selected((string) old('customer_id', $task->customer_id) === (string) $customer->id)>
+                {{ $customer->name }}
             </option>
         @endforeach
     </x-select>

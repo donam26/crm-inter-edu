@@ -5,7 +5,7 @@ namespace Database\Factories;
 use App\Enums\DealStage;
 use App\Models\Branch;
 use App\Models\Deal;
-use App\Models\Lead;
+use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -19,11 +19,11 @@ class DealFactory extends Factory
     public function definition(): array
     {
         return [
-            'lead_id' => Lead::factory(),
+            'customer_id' => Customer::factory(),
             'branch_id' => function (array $attrs) {
-                $lead = Lead::withoutGlobalScopes()->find($attrs['lead_id']);
+                $customer = Customer::withoutGlobalScopes()->find($attrs['customer_id']);
 
-                return $lead?->branch_id ?? (Branch::query()->inRandomOrder()->value('id') ?? Branch::factory());
+                return $customer?->branch_id ?? (Branch::query()->inRandomOrder()->value('id') ?? Branch::factory());
             },
             'owner_user_id' => null,
             'created_by' => function (array $attrs) {
@@ -61,12 +61,12 @@ class DealFactory extends Factory
         ]);
     }
 
-    public function forLead(Lead $lead): self
+    public function forLead(Customer $customer): self
     {
         return $this->state(fn () => [
-            'lead_id' => $lead->id,
-            'branch_id' => $lead->branch_id,
-            'owner_user_id' => $lead->assigned_user_id,
+            'customer_id' => $customer->id,
+            'branch_id' => $customer->branch_id,
+            'owner_user_id' => $customer->assigned_user_id,
         ]);
     }
 }

@@ -57,7 +57,7 @@ class RoleServiceTest extends TestCase
 
         $role = $this->service->create($mgr, [
             'name' => 'Telesales',
-            'permissions' => ['leads.view'],
+            'permissions' => ['customers.view'],
         ]);
 
         $this->assertSame($branch->id, $role->branch_id);
@@ -86,11 +86,11 @@ class RoleServiceTest extends TestCase
         // branches.create là quyền toàn cục → manager không được gán, phải bị loại.
         $role = $this->service->create($mgr, [
             'name' => 'Sneaky',
-            'permissions' => ['leads.view', 'branches.create'],
+            'permissions' => ['customers.view', 'branches.create'],
         ]);
 
         $names = $this->rolePermissionNames($role);
-        $this->assertContains('leads.view', $names);
+        $this->assertContains('customers.view', $names);
         $this->assertNotContains('branches.create', $names);
     }
 
@@ -120,7 +120,7 @@ class RoleServiceTest extends TestCase
         $this->expectException(RoleIsSystemException::class);
         $this->service->update($mgr, $systemRole, [
             'name' => 'Renamed',
-            'permissions' => ['leads.view'],
+            'permissions' => ['customers.view'],
         ]);
     }
 
@@ -130,17 +130,17 @@ class RoleServiceTest extends TestCase
         $mgr = $this->makeUser('branch-manager', $branch);
         $role = $this->service->create($mgr, [
             'name' => 'Custom',
-            'permissions' => ['leads.view'],
+            'permissions' => ['customers.view'],
         ]);
 
         $updated = $this->service->update($mgr, $role, [
             'name' => 'Custom Renamed',
-            'permissions' => ['leads.view', 'tasks.view'],
+            'permissions' => ['customers.view', 'tasks.view'],
         ]);
 
         $this->assertSame('Custom Renamed', $updated->name);
         $this->assertEqualsCanonicalizing(
-            ['leads.view', 'tasks.view'],
+            ['customers.view', 'tasks.view'],
             $this->rolePermissionNames($updated),
         );
     }
@@ -164,7 +164,7 @@ class RoleServiceTest extends TestCase
         $mgr = $this->makeUser('branch-manager', $branch);
         $role = $this->service->create($mgr, [
             'name' => 'Assigned',
-            'permissions' => ['leads.view'],
+            'permissions' => ['customers.view'],
         ]);
 
         // Gán role 'Assigned' cho một user trong team của branch. Đặt lại team
@@ -187,7 +187,7 @@ class RoleServiceTest extends TestCase
         $mgr = $this->makeUser('branch-manager', $branch);
         $role = $this->service->create($mgr, [
             'name' => 'Unused',
-            'permissions' => ['leads.view'],
+            'permissions' => ['customers.view'],
         ]);
 
         $this->service->delete($role);

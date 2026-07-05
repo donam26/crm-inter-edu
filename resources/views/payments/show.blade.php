@@ -35,7 +35,7 @@
                 <div class="flex"><span class="w-40 text-gray-500">Hoá đơn:</span>
                     <a href="{{ route('invoices.show', $payment->invoice) }}" class="font-mono text-brand-600 hover:underline">{{ $payment->invoice?->code }}</a>
                 </div>
-                <div class="flex"><span class="w-40 text-gray-500">Trường:</span><span>{{ $payment->invoice?->deal?->lead?->school_name ?? '—' }}</span></div>
+                <div class="flex"><span class="w-40 text-gray-500">Khách hàng:</span><span>{{ $payment->invoice?->deal?->customer?->name ?? '—' }}</span></div>
                 <div class="flex"><span class="w-40 text-gray-500">Số tiền:</span><span class="font-semibold tabular-nums">{{ number_format($payment->amount) }} đ</span></div>
                 <div class="flex"><span class="w-40 text-gray-500">Phương thức:</span><x-badge variant="secondary">{{ $payment->method?->label() }}</x-badge></div>
                 <div class="flex"><span class="w-40 text-gray-500">Ngày thu:</span><span>{{ $payment->paid_at?->format('d/m/Y') }}</span></div>

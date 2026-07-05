@@ -65,7 +65,7 @@ class InvoiceController extends Controller
     {
         $this->authorize('view', $invoice);
         $invoice->load([
-            'branch', 'deal.lead', 'deal.items',
+            'branch', 'deal.customer', 'deal.items',
             'creator', 'issuer', 'voider',
             'payments.creator', 'payments.confirmer',
         ]);

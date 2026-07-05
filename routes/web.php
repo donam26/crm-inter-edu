@@ -9,7 +9,7 @@ use App\Http\Controllers\DealItemController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\LabelController;
-use App\Http\Controllers\LeadController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
@@ -31,12 +31,12 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('branches', BranchController::class);
     Route::resource('users', UserController::class);
     Route::resource('roles', RoleController::class)->except(['show']);
-    Route::resource('leads', LeadController::class);
-    Route::post('/leads/{lead}/assign', [LeadController::class, 'assign'])->name('leads.assign');
-    Route::resource('leads.contacts', ContactController::class)
+    Route::resource('customers', CustomerController::class);
+    Route::post('/customers/{customer}/assign', [CustomerController::class, 'assign'])->name('customers.assign');
+    Route::resource('customers.contacts', ContactController::class)
         ->shallow()
         ->except(['index']);
-    Route::resource('leads.activities', ActivityController::class)
+    Route::resource('customers.activities', ActivityController::class)
         ->shallow()
         ->except(['index']);
 
@@ -73,7 +73,7 @@ Route::middleware(['auth'])->group(function () {
     // Catalog sản phẩm/gói khảo thí.
     Route::resource('products', ProductController::class);
 
-    // Pipeline doanh thu: Deal (1 lead = 1 deal).
+    // Pipeline doanh thu: Deal (1 customer = 1 deal).
     Route::resource('deals', DealController::class);
     Route::post('/deals/{deal}/win', [DealController::class, 'win'])->name('deals.win');
     Route::post('/deals/{deal}/lose', [DealController::class, 'lose'])->name('deals.lose');

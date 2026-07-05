@@ -5,7 +5,7 @@
 ]">
     <div class="max-w-3xl">
         <x-page-header :title="'Hoá đơn ' . $invoice->code"
-            :subtitle="'Deal: ' . ($invoice->deal?->code ?? '—') . ' · Trường: ' . ($invoice->deal?->lead?->school_name ?? '—')">
+            :subtitle="'Deal: ' . ($invoice->deal?->code ?? '—') . ' · Khách hàng: ' . ($invoice->deal?->customer?->name ?? '—')">
             @can('issue', $invoice)
                 @if ($invoice->status?->value === 'draft')
                     <form method="POST" action="{{ route('invoices.issue', $invoice) }}" onsubmit="return confirm('Phát hành hoá đơn?');">

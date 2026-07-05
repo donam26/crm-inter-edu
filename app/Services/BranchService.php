@@ -6,7 +6,7 @@ use App\Exceptions\BranchHasDependenciesException;
 use App\Models\Branch;
 use App\Models\Deal;
 use App\Models\Invoice;
-use App\Models\Lead;
+use App\Models\Customer;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\Role;
@@ -92,7 +92,7 @@ class BranchService
     public function delete(Branch $branch): void
     {
         DB::transaction(function () use ($branch) {
-            $hasLeads = class_exists(Lead::class) && $branch->leads()->exists();
+            $hasCustomers = class_exists(Customer::class) && $branch->customers()->exists();
             $hasDeals = class_exists(Deal::class)
                 && Deal::withoutGlobalScopes()->where('branch_id', $branch->id)->exists();
             $hasInvoices = class_exists(Invoice::class)
@@ -104,14 +104,14 @@ class BranchService
 
             if (
                 $branch->users()->exists()
-                || $hasLeads
+                || $hasCustomers
                 || $hasDeals
                 || $hasInvoices
                 || $hasPayments
                 || $hasProducts
             ) {
                 throw new BranchHasDependenciesException(
-                    'Không thể xóa branch đang có user, lead, sản phẩm, deal, hoá đơn hoặc thanh toán liên kết.'
+                    'Không thể xóa branch đang có user, customer, sản phẩm, deal, hoá đơn hoặc thanh toán liên kết.'
                 );
             }
 

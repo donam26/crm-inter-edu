@@ -22,10 +22,10 @@ class TaskPolicy
         }
 
         // tasks.view-all → mọi task; nếu không → task được giao cho mình hoặc
-        // gắn với Lead mình phụ trách.
+        // gắn với Customer mình phụ trách.
         return $user->can('tasks.view-all')
             || $task->assigned_user_id === $user->id
-            || ($task->lead_id !== null && $task->lead?->assigned_user_id === $user->id);
+            || ($task->customer_id !== null && $task->customer?->assigned_user_id === $user->id);
     }
 
     public function create(User $user): bool

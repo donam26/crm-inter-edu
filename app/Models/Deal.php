@@ -18,7 +18,7 @@ class Deal extends Model
 
     protected $fillable = [
         'branch_id',
-        'lead_id',
+        'customer_id',
         'owner_user_id',
         'created_by',
         'code',
@@ -51,9 +51,9 @@ class Deal extends Model
         return $this->belongsTo(Branch::class);
     }
 
-    public function lead(): BelongsTo
+    public function customer(): BelongsTo
     {
-        return $this->belongsTo(Lead::class);
+        return $this->belongsTo(Customer::class);
     }
 
     public function owner(): BelongsTo

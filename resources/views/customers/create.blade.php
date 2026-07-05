@@ -1,7 +1,7 @@
 {{-- Modal content (nạp qua AJAX). Không bọc layout. --}}
 @php $isSuperAdmin = ($branches ?? collect())->isNotEmpty(); @endphp
 
-<form method="POST" action="{{ route('leads.store') }}"
+<form method="POST" action="{{ route('customers.store') }}"
     @if ($isSuperAdmin)
         x-data="{
             branchId: @js((string) old('branch_id', '')),
@@ -24,7 +24,7 @@
 >
     @csrf
 
-    <x-input name="school_name" label="Tên trường" required />
+    <x-input name="name" label="Tên khách hàng" required />
 
     @if ($isSuperAdmin)
         <x-select name="branch_id" label="Chi nhánh" placeholder="— Chọn chi nhánh —" required x-model="branchId">
@@ -34,14 +34,9 @@
         </x-select>
     @endif
 
-    <x-select name="school_level" label="Cấp học" placeholder="— Chọn cấp học —" required>
-        @foreach ($levels as $l)
-            <option value="{{ $l->value }}" @selected(old('school_level') === $l->value)>{{ $l->label() }}</option>
-        @endforeach
-    </x-select>
-
-    <x-input name="student_size" label="Số học sinh" type="number" :value="old('student_size', 0)" />
-    <x-input name="address" label="Địa chỉ" />
+    <x-input name="phone" label="Điện thoại" :value="old('phone')" />
+    <x-input name="email" label="Email" type="email" :value="old('email')" />
+    <x-input name="address" label="Địa chỉ" :value="old('address')" />
 
     <x-select name="status" label="Trạng thái">
         @foreach ($statuses as $s)

@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Event;
-use App\Models\Lead;
+use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -46,8 +46,8 @@ class EventSeeder extends Seeder
             }
         }
 
-        // Thêm vài event gắn với Lead.
-        Lead::withoutGlobalScopes()->inRandomOrder()->limit(5)->get()
-            ->each(fn (Lead $lead) => Event::factory()->forLead($lead)->create());
+        // Thêm vài event gắn với Customer.
+        Customer::withoutGlobalScopes()->inRandomOrder()->limit(5)->get()
+            ->each(fn (Customer $customer) => Event::factory()->forLead($customer)->create());
     }
 }

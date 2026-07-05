@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Enums\TaskStatus;
-use App\Models\Lead;
+use App\Models\Customer;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -13,21 +13,21 @@ class TaskSeeder extends Seeder
     public function run(): void
     {
         // Bypass BranchScope vì seeder chạy ngoài auth context.
-        $leads = Lead::withoutGlobalScopes()->get();
+        $customers = Customer::withoutGlobalScopes()->get();
 
-        if ($leads->isEmpty()) {
+        if ($customers->isEmpty()) {
             return;
         }
 
-        foreach ($leads as $lead) {
+        foreach ($customers as $customer) {
             $count = random_int(0, 3);
 
             for ($i = 0; $i < $count; $i++) {
-                Task::factory()->forLead($lead)->create();
+                Task::factory()->forLead($customer)->create();
             }
         }
 
-        // Một số task không gắn Lead, gán cho user ngẫu nhiên trong branch.
+        // Một số task không gắn Customer, gán cho user ngẫu nhiên trong branch.
         User::query()
             ->whereNotNull('branch_id')
             ->inRandomOrder()

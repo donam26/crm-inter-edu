@@ -15,7 +15,7 @@ class DashboardController extends Controller
         $user = Auth::user();
         $stats = $this->service->getStatsForUser($user);
 
-        // Super-admin xem `leads_by_branch` cần tên branch để hiển thị; các
+        // Super-admin xem `customers_by_branch` cần tên branch để hiển thị; các
         // role khác không cần branches dropdown trên dashboard.
         $branches = $user->hasRole('super-admin')
             ? Branch::orderBy('name')->get()->keyBy('id')

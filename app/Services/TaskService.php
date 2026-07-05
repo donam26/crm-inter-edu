@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use App\Enums\TaskStatus;
-use App\Models\Lead;
+use App\Models\Customer;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -23,7 +23,7 @@ class TaskService
      *  - priority: enum value
      *  - type: enum value
      *  - assigned_user_id: int
-     *  - lead_id: int
+     *  - customer_id: int
      *  - branch_id: int (chỉ super-admin được dùng — Controller phải check)
      *  - due: 'overdue' | 'today' | 'this_week' | 'upcoming'
      *  - q: search title/description
@@ -55,7 +55,7 @@ class TaskService
     public function board(array $filters = [], int $perColumn = 200): array
     {
         // Status filter không áp dụng cho board view (board hiển thị tất cả
-        // cột); các filter khác (priority/type/assignee/lead/branch/due/q)
+        // cột); các filter khác (priority/type/assignee/customer/branch/due/q)
         // vẫn áp dụng bình thường.
         $filters = array_diff_key($filters, ['status' => null]);
 
@@ -92,7 +92,7 @@ class TaskService
     private function buildQuery(array $filters): Builder
     {
         return Task::query()
-            ->with(['branch', 'lead', 'assignee', 'creator', 'labels'])
+            ->with(['branch', 'customer', 'assignee', 'creator', 'labels'])
             ->withCount([
                 'checklistItems',
                 'checklistItems as checklist_done_count' => fn ($q) => $q->where('is_done', true),
@@ -101,7 +101,7 @@ class TaskService
             ->when($filters['priority'] ?? null, fn ($q, $v) => $q->where('priority', $v))
             ->when($filters['type'] ?? null, fn ($q, $v) => $q->where('type', $v))
             ->when($filters['assigned_user_id'] ?? null, fn ($q, $v) => $q->where('assigned_user_id', $v))
-            ->when($filters['lead_id'] ?? null, fn ($q, $v) => $q->where('lead_id', $v))
+            ->when($filters['customer_id'] ?? null, fn ($q, $v) => $q->where('customer_id', $v))
             ->when($filters['branch_id'] ?? null, fn ($q, $v) => $q->where('branch_id', $v))
             ->when($filters['watching'] ?? null, fn ($q) => $q->whereHas('watchers', fn ($w) => $w->where('users.id', Auth::id())))
             ->when($filters['q'] ?? null, fn ($q, $v) => $q->where(function ($q2) use ($v) {
@@ -131,7 +131,7 @@ class TaskService
      * Cross-branch guards:
      *  - assignee phải tồn tại; nếu auth user không phải super-admin thì
      *    assignee phải cùng branch với auth user.
-     *  - lead (nếu có) phải cùng branch với assignee.
+     *  - customer (nếu có) phải cùng branch với assignee.
      *
      * @param  array<string, mixed>  $data
      */
@@ -146,10 +146,10 @@ class TaskService
             // branch_id authoritative source = assignee.branch_id.
             $data['branch_id'] = $assignee->branch_id;
 
-            if (! empty($data['lead_id'])) {
-                $this->guardLeadBranch((int) $data['lead_id'], (int) $assignee->branch_id);
+            if (! empty($data['customer_id'])) {
+                $this->guardCustomerBranch((int) $data['customer_id'], (int) $assignee->branch_id);
             } else {
-                $data['lead_id'] = null;
+                $data['customer_id'] = null;
             }
 
             // Service-layer injection: chặn override các field auto-set.
@@ -171,7 +171,7 @@ class TaskService
      *
      * Đảm bảo:
      *  - branch_id luôn đồng bộ với assignee.branch_id (sau update).
-     *  - lead (nếu có) cùng branch với assignee.
+     *  - customer (nếu có) cùng branch với assignee.
      *  - Khi status được set sang Completed qua update: tự động fill
      *    completed_at = now, completed_by = auth user (idempotent — nếu đã
      *    completed thì giữ nguyên).
@@ -202,15 +202,15 @@ class TaskService
             $newBranchId = (int) $assignee->branch_id;
             $data['branch_id'] = $newBranchId;
 
-            if (array_key_exists('lead_id', $data)) {
-                if (! empty($data['lead_id'])) {
-                    $this->guardLeadBranch((int) $data['lead_id'], $newBranchId);
+            if (array_key_exists('customer_id', $data)) {
+                if (! empty($data['customer_id'])) {
+                    $this->guardCustomerBranch((int) $data['customer_id'], $newBranchId);
                 } else {
-                    $data['lead_id'] = null;
+                    $data['customer_id'] = null;
                 }
-            } elseif ($task->lead_id !== null) {
-                // assignee có thể đã đổi branch → kiểm tra lead hiện tại.
-                $this->guardLeadBranch((int) $task->lead_id, $newBranchId);
+            } elseif ($task->customer_id !== null) {
+                // assignee có thể đã đổi branch → kiểm tra customer hiện tại.
+                $this->guardCustomerBranch((int) $task->customer_id, $newBranchId);
             }
 
             // Status transition: Completed/Open phải đồng bộ completed_at/by.
@@ -355,19 +355,19 @@ class TaskService
         }
     }
 
-    private function guardLeadBranch(int $leadId, int $branchId): void
+    private function guardCustomerBranch(int $customerId, int $branchId): void
     {
-        $lead = Lead::withoutGlobalScopes()->find($leadId);
+        $customer = Customer::withoutGlobalScopes()->find($customerId);
 
-        if ($lead === null) {
+        if ($customer === null) {
             throw ValidationException::withMessages([
-                'lead_id' => 'Lead không tồn tại.',
+                'customer_id' => 'Customer không tồn tại.',
             ]);
         }
 
-        if ((int) $lead->branch_id !== $branchId) {
+        if ((int) $customer->branch_id !== $branchId) {
             throw ValidationException::withMessages([
-                'lead_id' => 'Lead phải thuộc cùng chi nhánh với người được giao.',
+                'customer_id' => 'Customer phải thuộc cùng chi nhánh với người được giao.',
             ]);
         }
     }

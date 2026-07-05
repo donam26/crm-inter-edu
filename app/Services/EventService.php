@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Enums\EventStatus;
 use App\Models\Event;
-use App\Models\Lead;
+use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
@@ -20,7 +20,7 @@ class EventService
      *
      * Filter hỗ trợ:
      *  - status / type
-     *  - organizer_user_id, lead_id, branch_id (super-admin only)
+     *  - organizer_user_id, customer_id, branch_id (super-admin only)
      *  - from, to: khoảng thời gian (ISO date string)
      *  - q: search title/description/location
      *
@@ -29,11 +29,11 @@ class EventService
     public function list(array $filters = []): LengthAwarePaginator
     {
         return Event::query()
-            ->with(['branch', 'organizer', 'lead'])
+            ->with(['branch', 'organizer', 'customer'])
             ->when($filters['status'] ?? null, fn ($q, $v) => $q->where('status', $v))
             ->when($filters['type'] ?? null, fn ($q, $v) => $q->where('type', $v))
             ->when($filters['organizer_user_id'] ?? null, fn ($q, $v) => $q->where('organizer_user_id', $v))
-            ->when($filters['lead_id'] ?? null, fn ($q, $v) => $q->where('lead_id', $v))
+            ->when($filters['customer_id'] ?? null, fn ($q, $v) => $q->where('customer_id', $v))
             ->when($filters['branch_id'] ?? null, fn ($q, $v) => $q->where('branch_id', $v))
             ->when(($filters['from'] ?? null) && ($filters['to'] ?? null),
                 fn ($q) => $q->between(
@@ -61,7 +61,7 @@ class EventService
      * Cross-branch guards:
      *  - organizer phải có branch_id.
      *  - non-super-admin: organizer phải cùng branch với auth user.
-     *  - lead (nếu có) phải cùng branch với organizer.
+     *  - customer (nếu có) phải cùng branch với organizer.
      *  - tất cả attendees phải cùng branch với organizer.
      *
      * @param  array<string, mixed>  $data
@@ -77,10 +77,10 @@ class EventService
             $branchId = (int) $organizer->branch_id;
             $data['branch_id'] = $branchId;
 
-            if (! empty($data['lead_id'])) {
-                $this->guardLeadBranch((int) $data['lead_id'], $branchId);
+            if (! empty($data['customer_id'])) {
+                $this->guardCustomerBranch((int) $data['customer_id'], $branchId);
             } else {
-                $data['lead_id'] = null;
+                $data['customer_id'] = null;
             }
 
             $attendeeIds = $this->normalizeAttendeeIds($data['attendee_ids'] ?? []);
@@ -107,7 +107,7 @@ class EventService
      *
      * Đảm bảo:
      *  - branch_id luôn đồng bộ với organizer.branch_id.
-     *  - lead (nếu có) cùng branch với organizer.
+     *  - customer (nếu có) cùng branch với organizer.
      *  - attendees cùng branch với organizer.
      *  - Khi đổi status sang Done/Cancelled từ Scheduled: chỉ cập nhật trường,
      *    không có side-effect khác (giữ đơn giản).
@@ -129,14 +129,14 @@ class EventService
             $branchId = (int) $organizer->branch_id;
             $data['branch_id'] = $branchId;
 
-            if (array_key_exists('lead_id', $data)) {
-                if (! empty($data['lead_id'])) {
-                    $this->guardLeadBranch((int) $data['lead_id'], $branchId);
+            if (array_key_exists('customer_id', $data)) {
+                if (! empty($data['customer_id'])) {
+                    $this->guardCustomerBranch((int) $data['customer_id'], $branchId);
                 } else {
-                    $data['lead_id'] = null;
+                    $data['customer_id'] = null;
                 }
-            } elseif ($event->lead_id !== null) {
-                $this->guardLeadBranch((int) $event->lead_id, $branchId);
+            } elseif ($event->customer_id !== null) {
+                $this->guardCustomerBranch((int) $event->customer_id, $branchId);
             }
 
             $hasAttendeesPayload = array_key_exists('attendee_ids', $data);
@@ -321,19 +321,19 @@ class EventService
         }
     }
 
-    private function guardLeadBranch(int $leadId, int $branchId): void
+    private function guardCustomerBranch(int $customerId, int $branchId): void
     {
-        $lead = Lead::withoutGlobalScopes()->find($leadId);
+        $customer = Customer::withoutGlobalScopes()->find($customerId);
 
-        if ($lead === null) {
+        if ($customer === null) {
             throw ValidationException::withMessages([
-                'lead_id' => 'Lead không tồn tại.',
+                'customer_id' => 'Customer không tồn tại.',
             ]);
         }
 
-        if ((int) $lead->branch_id !== $branchId) {
+        if ((int) $customer->branch_id !== $branchId) {
             throw ValidationException::withMessages([
-                'lead_id' => 'Lead phải thuộc cùng chi nhánh với người chủ trì.',
+                'customer_id' => 'Customer phải thuộc cùng chi nhánh với người chủ trì.',
             ]);
         }
     }

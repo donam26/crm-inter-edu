@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Branch;
 use App\Models\Contact;
-use App\Models\Lead;
+use App\Models\Customer;
 use App\Models\Scopes\BranchScope;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\InteractsWithRbac;
@@ -25,9 +25,9 @@ class ContactTest extends TestCase
     public function test_guest_redirected_when_creating_contact(): void
     {
         $branch = Branch::factory()->create();
-        $lead = Lead::factory()->forBranch($branch)->create();
+        $customer = Customer::factory()->forBranch($branch)->create();
 
-        $this->get(route('leads.contacts.create', $lead))
+        $this->get(route('customers.contacts.create', $customer))
             ->assertRedirect(route('login'));
     }
 
@@ -37,17 +37,17 @@ class ContactTest extends TestCase
     {
         $admin = $this->makeUser('super-admin');
         $branch = Branch::factory()->create();
-        $lead = Lead::factory()->forBranch($branch)->create();
+        $customer = Customer::factory()->forBranch($branch)->create();
 
         $this->actingAs($admin)
-            ->post(route('leads.contacts.store', $lead), [
+            ->post(route('customers.contacts.store', $customer), [
                 'full_name' => 'Nguyễn Văn A',
                 'email' => 'a@example.com',
             ])
-            ->assertRedirect(route('leads.show', $lead));
+            ->assertRedirect(route('customers.show', $customer));
 
         $this->assertDatabaseHas('contacts', [
-            'lead_id' => $lead->id,
+            'customer_id' => $customer->id,
             'branch_id' => $branch->id,
             'full_name' => 'Nguyễn Văn A',
             'email' => 'a@example.com',
@@ -58,8 +58,8 @@ class ContactTest extends TestCase
     {
         $admin = $this->makeUser('super-admin');
         $branch = Branch::factory()->create();
-        $lead = Lead::factory()->forBranch($branch)->create();
-        $contact = Contact::factory()->forLead($lead)->create([
+        $customer = Customer::factory()->forBranch($branch)->create();
+        $contact = Contact::factory()->forLead($customer)->create([
             'full_name' => 'Old Name',
             'email' => 'old@example.com',
         ]);
@@ -83,18 +83,18 @@ class ContactTest extends TestCase
     {
         $branch = Branch::factory()->create();
         $mgr = $this->makeUser('branch-manager', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create();
+        $customer = Customer::factory()->forBranch($branch)->create();
 
         $this->actingAs($mgr)
-            ->post(route('leads.contacts.store', $lead), [
+            ->post(route('customers.contacts.store', $customer), [
                 'full_name' => 'Trần Thị B',
                 'phone' => '0901234567',
                 'is_primary' => '1',
             ])
-            ->assertRedirect(route('leads.show', $lead));
+            ->assertRedirect(route('customers.show', $customer));
 
         $this->assertDatabaseHas('contacts', [
-            'lead_id' => $lead->id,
+            'customer_id' => $customer->id,
             'branch_id' => $branch->id,
             'full_name' => 'Trần Thị B',
             'is_primary' => true,
@@ -106,8 +106,8 @@ class ContactTest extends TestCase
         $branchA = Branch::factory()->create();
         $branchB = Branch::factory()->create();
         $mgr = $this->makeUser('branch-manager', $branchA);
-        $lead = Lead::factory()->forBranch($branchB)->create();
-        $contact = Contact::factory()->forLead($lead)->create();
+        $customer = Customer::factory()->forBranch($branchB)->create();
+        $contact = Contact::factory()->forLead($customer)->create();
 
         // BranchScope ẩn contact thuộc branch khác → 404 model not found.
         $this->actingAs($mgr)
@@ -119,12 +119,12 @@ class ContactTest extends TestCase
     {
         $branch = Branch::factory()->create();
         $mgr = $this->makeUser('branch-manager', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create();
-        $contact = Contact::factory()->forLead($lead)->create();
+        $customer = Customer::factory()->forBranch($branch)->create();
+        $contact = Contact::factory()->forLead($customer)->create();
 
         $this->actingAs($mgr)
             ->delete(route('contacts.destroy', $contact))
-            ->assertRedirect(route('leads.show', $lead));
+            ->assertRedirect(route('customers.show', $customer));
 
         $this->assertDatabaseMissing('contacts', ['id' => $contact->id]);
     }
@@ -135,19 +135,19 @@ class ContactTest extends TestCase
     {
         $branch = Branch::factory()->create();
         $sales = $this->makeUser('sales', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create([
+        $customer = Customer::factory()->forBranch($branch)->create([
             'assigned_user_id' => $sales->id,
         ]);
 
         $this->actingAs($sales)
-            ->post(route('leads.contacts.store', $lead), [
+            ->post(route('customers.contacts.store', $customer), [
                 'full_name' => 'My Contact',
                 'email' => 'mine@example.com',
             ])
-            ->assertRedirect(route('leads.show', $lead));
+            ->assertRedirect(route('customers.show', $customer));
 
         $this->assertDatabaseHas('contacts', [
-            'lead_id' => $lead->id,
+            'customer_id' => $customer->id,
             'full_name' => 'My Contact',
         ]);
     }
@@ -157,19 +157,19 @@ class ContactTest extends TestCase
         $branch = Branch::factory()->create();
         $sales = $this->makeUser('sales', $branch);
         $other = $this->makeUser('sales', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create([
+        $customer = Customer::factory()->forBranch($branch)->create([
             'assigned_user_id' => $other->id,
         ]);
 
         $this->actingAs($sales)
-            ->post(route('leads.contacts.store', $lead), [
+            ->post(route('customers.contacts.store', $customer), [
                 'full_name' => 'Cannot create',
                 'email' => 'no@example.com',
             ])
             ->assertForbidden();
 
         $this->assertDatabaseMissing('contacts', [
-            'lead_id' => $lead->id,
+            'customer_id' => $customer->id,
             'full_name' => 'Cannot create',
         ]);
     }
@@ -180,14 +180,14 @@ class ContactTest extends TestCase
     {
         $branch = Branch::factory()->create();
         $mgr = $this->makeUser('branch-manager', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create();
+        $customer = Customer::factory()->forBranch($branch)->create();
 
         $this->actingAs($mgr)
-            ->from(route('leads.contacts.create', $lead))
-            ->post(route('leads.contacts.store', $lead), [
+            ->from(route('customers.contacts.create', $customer))
+            ->post(route('customers.contacts.store', $customer), [
                 'full_name' => 'No Contact Method',
             ])
-            ->assertRedirect(route('leads.contacts.create', $lead))
+            ->assertRedirect(route('customers.contacts.create', $customer))
             ->assertSessionHasErrors(['email', 'phone']);
     }
 
@@ -195,11 +195,11 @@ class ContactTest extends TestCase
     {
         $branch = Branch::factory()->create();
         $mgr = $this->makeUser('branch-manager', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create();
+        $customer = Customer::factory()->forBranch($branch)->create();
 
         $this->actingAs($mgr)
-            ->from(route('leads.contacts.create', $lead))
-            ->post(route('leads.contacts.store', $lead), [
+            ->from(route('customers.contacts.create', $customer))
+            ->post(route('customers.contacts.store', $customer), [
                 'email' => 'a@example.com',
             ])
             ->assertSessionHasErrors('full_name');
@@ -211,11 +211,11 @@ class ContactTest extends TestCase
     {
         $branch = Branch::factory()->create();
         $mgr = $this->makeUser('branch-manager', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create();
-        $existing = Contact::factory()->forLead($lead)->primary()->create();
+        $customer = Customer::factory()->forBranch($branch)->create();
+        $existing = Contact::factory()->forLead($customer)->primary()->create();
 
         $this->actingAs($mgr)
-            ->post(route('leads.contacts.store', $lead), [
+            ->post(route('customers.contacts.store', $customer), [
                 'full_name' => 'New Primary',
                 'phone' => '0900000000',
                 'is_primary' => '1',
@@ -226,7 +226,7 @@ class ContactTest extends TestCase
         $this->assertFalse($existing->is_primary);
 
         $primaryCount = Contact::withoutGlobalScope(BranchScope::class)
-            ->where('lead_id', $lead->id)
+            ->where('customer_id', $customer->id)
             ->where('is_primary', true)
             ->count();
         $this->assertSame(1, $primaryCount);
@@ -236,9 +236,9 @@ class ContactTest extends TestCase
     {
         $branch = Branch::factory()->create();
         $mgr = $this->makeUser('branch-manager', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create();
-        $existingPrimary = Contact::factory()->forLead($lead)->primary()->create();
-        $other = Contact::factory()->forLead($lead)->create();
+        $customer = Customer::factory()->forBranch($branch)->create();
+        $existingPrimary = Contact::factory()->forLead($customer)->primary()->create();
+        $other = Contact::factory()->forLead($customer)->create();
 
         $this->actingAs($mgr)
             ->put(route('contacts.update', $other), [
@@ -259,22 +259,22 @@ class ContactTest extends TestCase
     public function test_deleting_lead_cascades_to_contacts(): void
     {
         $branch = Branch::factory()->create();
-        $lead = Lead::factory()->forBranch($branch)->create();
-        Contact::factory()->forLead($lead)->count(3)->create();
+        $customer = Customer::factory()->forBranch($branch)->create();
+        Contact::factory()->forLead($customer)->count(3)->create();
 
         $this->assertSame(
             3,
             Contact::withoutGlobalScope(BranchScope::class)
-                ->where('lead_id', $lead->id)
+                ->where('customer_id', $customer->id)
                 ->count()
         );
 
-        $lead->delete();
+        $customer->delete();
 
         $this->assertSame(
             0,
             Contact::withoutGlobalScope(BranchScope::class)
-                ->where('lead_id', $lead->id)
+                ->where('customer_id', $customer->id)
                 ->count()
         );
     }
@@ -286,21 +286,21 @@ class ContactTest extends TestCase
         $own = Branch::factory()->create();
         $other = Branch::factory()->create();
         $mgr = $this->makeUser('branch-manager', $own);
-        $lead = Lead::factory()->forBranch($own)->create();
-        $foreignLead = Lead::factory()->forBranch($other)->create();
+        $customer = Customer::factory()->forBranch($own)->create();
+        $foreignLead = Customer::factory()->forBranch($other)->create();
 
         $this->actingAs($mgr)
-            ->post(route('leads.contacts.store', $lead), [
+            ->post(route('customers.contacts.store', $customer), [
                 'full_name' => 'Hack Attempt',
                 'email' => 'hack@example.com',
-                'lead_id' => $foreignLead->id,
+                'customer_id' => $foreignLead->id,
                 'branch_id' => $other->id,
             ])
             ->assertRedirect();
 
         $this->assertDatabaseHas('contacts', [
             'full_name' => 'Hack Attempt',
-            'lead_id' => $lead->id,
+            'customer_id' => $customer->id,
             'branch_id' => $own->id,
         ]);
     }

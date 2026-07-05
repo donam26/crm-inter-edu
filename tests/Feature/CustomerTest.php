@@ -3,13 +3,13 @@
 namespace Tests\Feature;
 
 use App\Models\Branch;
-use App\Models\Lead;
+use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\InteractsWithRbac;
 use Tests\TestCase;
 
-class LeadTest extends TestCase
+class CustomerTest extends TestCase
 {
     use InteractsWithRbac, RefreshDatabase;
 
@@ -23,7 +23,7 @@ class LeadTest extends TestCase
 
     public function test_guest_redirected_from_leads_index(): void
     {
-        $this->get(route('leads.index'))
+        $this->get(route('customers.index'))
             ->assertRedirect(route('login'));
     }
 
@@ -34,34 +34,32 @@ class LeadTest extends TestCase
         $admin = $this->makeUser('super-admin');
         $b1 = Branch::factory()->create();
         $b2 = Branch::factory()->create();
-        Lead::factory()->forBranch($b1)->count(2)->create();
-        Lead::factory()->forBranch($b2)->count(3)->create();
+        Customer::factory()->forBranch($b1)->count(2)->create();
+        Customer::factory()->forBranch($b2)->count(3)->create();
 
         $this->actingAs($admin)
-            ->get(route('leads.index'))
+            ->get(route('customers.index'))
             ->assertOk();
     }
 
     public function test_super_admin_can_create_lead_using_own_branch_id_null(): void
     {
         // Super-admin có branch_id=null. Service set branch_id từ user, nên
-        // payload tạo lead chỉ thực sự thành công khi super-admin có branch.
+        // payload tạo customer chỉ thực sự thành công khi super-admin có branch.
         $branch = Branch::factory()->create();
         $admin = $this->makeUser('super-admin', $branch);
 
         $payload = [
-            'school_name' => 'Trường ABC',
-            'school_level' => 'thcs',
-            'student_size' => 500,
+            'name' => 'Trường ABC',
             'status' => 'new',
         ];
 
         $this->actingAs($admin)
-            ->post(route('leads.store'), $payload)
+            ->post(route('customers.store'), $payload)
             ->assertRedirect();
 
-        $this->assertDatabaseHas('leads', [
-            'school_name' => 'Trường ABC',
+        $this->assertDatabaseHas('customers', [
+            'name' => 'Trường ABC',
             'branch_id' => $branch->id,
         ]);
     }
@@ -76,36 +74,33 @@ class LeadTest extends TestCase
         $this->assertNull($admin->branch_id);
 
         $this->actingAs($admin)
-            ->post(route('leads.store'), [
-                'school_name' => 'Trường XYZ',
-                'school_level' => 'thcs',
-                'student_size' => 12,
+            ->post(route('customers.store'), [
+                'name' => 'Trường XYZ',
                 'status' => 'new',
                 'branch_id' => $branch->id,
             ])
             ->assertRedirect();
 
-        $this->assertDatabaseHas('leads', [
-            'school_name' => 'Trường XYZ',
+        $this->assertDatabaseHas('customers', [
+            'name' => 'Trường XYZ',
             'branch_id' => $branch->id,
         ]);
     }
 
     public function test_super_admin_without_branch_must_supply_branch(): void
     {
-        // Thiếu branch_id → validation lỗi, không tạo lead (chứ không phải 500).
+        // Thiếu branch_id → validation lỗi, không tạo customer (chứ không phải 500).
         $admin = $this->makeUser('super-admin');
 
         $this->actingAs($admin)
-            ->post(route('leads.store'), [
-                'school_name' => 'Trường No Branch',
-                'school_level' => 'thcs',
+            ->post(route('customers.store'), [
+                'name' => 'Trường No Branch',
                 'status' => 'new',
             ])
             ->assertSessionHasErrors('branch_id');
 
-        $this->assertDatabaseMissing('leads', [
-            'school_name' => 'Trường No Branch',
+        $this->assertDatabaseMissing('customers', [
+            'name' => 'Trường No Branch',
         ]);
     }
 
@@ -116,17 +111,16 @@ class LeadTest extends TestCase
         $admin = $this->makeUser('super-admin');
 
         $this->actingAs($admin)
-            ->post(route('leads.store'), [
-                'school_name' => 'Trường Có Phụ Trách',
-                'school_level' => 'thcs',
+            ->post(route('customers.store'), [
+                'name' => 'Trường Có Phụ Trách',
                 'status' => 'new',
                 'branch_id' => $branch->id,
                 'assigned_user_id' => $sales->id,
             ])
             ->assertRedirect();
 
-        $this->assertDatabaseHas('leads', [
-            'school_name' => 'Trường Có Phụ Trách',
+        $this->assertDatabaseHas('customers', [
+            'name' => 'Trường Có Phụ Trách',
             'branch_id' => $branch->id,
             'assigned_user_id' => $sales->id,
         ]);
@@ -134,7 +128,7 @@ class LeadTest extends TestCase
 
     public function test_create_rejects_assignee_from_other_branch(): void
     {
-        // Guard: assignee phải cùng chi nhánh với lead — chặn cả khi request
+        // Guard: assignee phải cùng chi nhánh với customer — chặn cả khi request
         // được "chế" tay với user thuộc chi nhánh khác.
         $branchA = Branch::factory()->create();
         $branchB = Branch::factory()->create();
@@ -142,17 +136,16 @@ class LeadTest extends TestCase
         $admin = $this->makeUser('super-admin');
 
         $this->actingAs($admin)
-            ->post(route('leads.store'), [
-                'school_name' => 'Trường Sai Chi Nhánh',
-                'school_level' => 'thcs',
+            ->post(route('customers.store'), [
+                'name' => 'Trường Sai Chi Nhánh',
                 'status' => 'new',
                 'branch_id' => $branchA->id,
                 'assigned_user_id' => $otherSales->id,
             ])
             ->assertSessionHasErrors('assigned_user_id');
 
-        $this->assertDatabaseMissing('leads', [
-            'school_name' => 'Trường Sai Chi Nhánh',
+        $this->assertDatabaseMissing('customers', [
+            'name' => 'Trường Sai Chi Nhánh',
         ]);
     }
 
@@ -160,10 +153,10 @@ class LeadTest extends TestCase
     {
         $admin = $this->makeUser('super-admin');
         $branch = Branch::factory()->create();
-        $lead = Lead::factory()->forBranch($branch)->create();
+        $customer = Customer::factory()->forBranch($branch)->create();
 
         $this->actingAs($admin)
-            ->get(route('leads.show', $lead))
+            ->get(route('customers.show', $customer))
             ->assertOk();
     }
 
@@ -171,23 +164,21 @@ class LeadTest extends TestCase
     {
         $admin = $this->makeUser('super-admin');
         $branch = Branch::factory()->create();
-        $lead = Lead::factory()->forBranch($branch)->create([
-            'school_name' => 'Old',
+        $customer = Customer::factory()->forBranch($branch)->create([
+            'name' => 'Old',
             'status' => 'new',
         ]);
 
         $this->actingAs($admin)
-            ->put(route('leads.update', $lead), [
-                'school_name' => 'New Name',
-                'school_level' => 'thpt',
-                'student_size' => 600,
+            ->put(route('customers.update', $customer), [
+                'name' => 'New Name',
                 'status' => 'contacted',
             ])
             ->assertRedirect();
 
-        $this->assertDatabaseHas('leads', [
-            'id' => $lead->id,
-            'school_name' => 'New Name',
+        $this->assertDatabaseHas('customers', [
+            'id' => $customer->id,
+            'name' => 'New Name',
             'status' => 'contacted',
         ]);
     }
@@ -196,13 +187,13 @@ class LeadTest extends TestCase
     {
         $admin = $this->makeUser('super-admin');
         $branch = Branch::factory()->create();
-        $lead = Lead::factory()->forBranch($branch)->create();
+        $customer = Customer::factory()->forBranch($branch)->create();
 
         $this->actingAs($admin)
-            ->delete(route('leads.destroy', $lead))
-            ->assertRedirect(route('leads.index'));
+            ->delete(route('customers.destroy', $customer))
+            ->assertRedirect(route('customers.index'));
 
-        $this->assertDatabaseMissing('leads', ['id' => $lead->id]);
+        $this->assertDatabaseMissing('customers', ['id' => $customer->id]);
     }
 
     // ───────────────────── branch-manager ─────────────────────
@@ -211,10 +202,10 @@ class LeadTest extends TestCase
     {
         $branch = Branch::factory()->create();
         $mgr = $this->makeUser('branch-manager', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create();
+        $customer = Customer::factory()->forBranch($branch)->create();
 
         $this->actingAs($mgr)
-            ->get(route('leads.show', $lead))
+            ->get(route('customers.show', $customer))
             ->assertOk();
     }
 
@@ -223,11 +214,11 @@ class LeadTest extends TestCase
         $own = Branch::factory()->create();
         $other = Branch::factory()->create();
         $mgr = $this->makeUser('branch-manager', $own);
-        $lead = Lead::factory()->forBranch($other)->create();
+        $customer = Customer::factory()->forBranch($other)->create();
 
-        // BranchScope ẩn lead thuộc branch khác → 404 model not found.
+        // BranchScope ẩn customer thuộc branch khác → 404 model not found.
         $this->actingAs($mgr)
-            ->get(route('leads.show', $lead))
+            ->get(route('customers.show', $customer))
             ->assertNotFound();
     }
 
@@ -237,16 +228,14 @@ class LeadTest extends TestCase
         $mgr = $this->makeUser('branch-manager', $branch);
 
         $this->actingAs($mgr)
-            ->post(route('leads.store'), [
-                'school_name' => 'Trường XYZ',
-                'school_level' => 'tieu_hoc',
-                'student_size' => 300,
+            ->post(route('customers.store'), [
+                'name' => 'Trường XYZ',
                 'status' => 'new',
             ])
             ->assertRedirect();
 
-        $this->assertDatabaseHas('leads', [
-            'school_name' => 'Trường XYZ',
+        $this->assertDatabaseHas('customers', [
+            'name' => 'Trường XYZ',
             'branch_id' => $branch->id,
         ]);
     }
@@ -259,21 +248,19 @@ class LeadTest extends TestCase
 
         // Cố tình gửi branch_id của branch khác trong payload — phải bị bỏ qua.
         $this->actingAs($mgr)
-            ->post(route('leads.store'), [
-                'school_name' => 'Hack School',
-                'school_level' => 'thcs',
-                'student_size' => 100,
+            ->post(route('customers.store'), [
+                'name' => 'Hack School',
                 'status' => 'new',
                 'branch_id' => $other->id,
             ])
             ->assertRedirect();
 
-        $this->assertDatabaseHas('leads', [
-            'school_name' => 'Hack School',
+        $this->assertDatabaseHas('customers', [
+            'name' => 'Hack School',
             'branch_id' => $own->id,
         ]);
-        $this->assertDatabaseMissing('leads', [
-            'school_name' => 'Hack School',
+        $this->assertDatabaseMissing('customers', [
+            'name' => 'Hack School',
             'branch_id' => $other->id,
         ]);
     }
@@ -282,20 +269,18 @@ class LeadTest extends TestCase
     {
         $branch = Branch::factory()->create();
         $mgr = $this->makeUser('branch-manager', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create(['school_name' => 'Old']);
+        $customer = Customer::factory()->forBranch($branch)->create(['name' => 'Old']);
 
         $this->actingAs($mgr)
-            ->put(route('leads.update', $lead), [
-                'school_name' => 'Updated',
-                'school_level' => 'thpt',
-                'student_size' => 800,
+            ->put(route('customers.update', $customer), [
+                'name' => 'Updated',
                 'status' => 'qualified',
             ])
             ->assertRedirect();
 
-        $this->assertDatabaseHas('leads', [
-            'id' => $lead->id,
-            'school_name' => 'Updated',
+        $this->assertDatabaseHas('customers', [
+            'id' => $customer->id,
+            'name' => 'Updated',
         ]);
     }
 
@@ -303,13 +288,13 @@ class LeadTest extends TestCase
     {
         $branch = Branch::factory()->create();
         $mgr = $this->makeUser('branch-manager', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create();
+        $customer = Customer::factory()->forBranch($branch)->create();
 
         $this->actingAs($mgr)
-            ->delete(route('leads.destroy', $lead))
-            ->assertRedirect(route('leads.index'));
+            ->delete(route('customers.destroy', $customer))
+            ->assertRedirect(route('customers.index'));
 
-        $this->assertDatabaseMissing('leads', ['id' => $lead->id]);
+        $this->assertDatabaseMissing('customers', ['id' => $customer->id]);
     }
 
     // ───────────────────── sales ─────────────────────
@@ -318,12 +303,12 @@ class LeadTest extends TestCase
     {
         $branch = Branch::factory()->create();
         $sales = $this->makeUser('sales', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create([
+        $customer = Customer::factory()->forBranch($branch)->create([
             'assigned_user_id' => $sales->id,
         ]);
 
         $this->actingAs($sales)
-            ->get(route('leads.show', $lead))
+            ->get(route('customers.show', $customer))
             ->assertOk();
     }
 
@@ -332,12 +317,12 @@ class LeadTest extends TestCase
         $branch = Branch::factory()->create();
         $sales1 = $this->makeUser('sales', $branch);
         $sales2 = $this->makeUser('sales', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create([
+        $customer = Customer::factory()->forBranch($branch)->create([
             'assigned_user_id' => $sales2->id,
         ]);
 
         $this->actingAs($sales1)
-            ->get(route('leads.show', $lead))
+            ->get(route('customers.show', $customer))
             ->assertForbidden();
     }
 
@@ -346,23 +331,21 @@ class LeadTest extends TestCase
         $branch = Branch::factory()->create();
         $sales1 = $this->makeUser('sales', $branch);
         $sales2 = $this->makeUser('sales', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create([
+        $customer = Customer::factory()->forBranch($branch)->create([
             'assigned_user_id' => $sales2->id,
-            'school_name' => 'Original',
+            'name' => 'Original',
         ]);
 
         $this->actingAs($sales1)
-            ->put(route('leads.update', $lead), [
-                'school_name' => 'Hacked',
-                'school_level' => 'thcs',
-                'student_size' => 100,
+            ->put(route('customers.update', $customer), [
+                'name' => 'Hacked',
                 'status' => 'new',
             ])
             ->assertForbidden();
 
-        $this->assertDatabaseHas('leads', [
-            'id' => $lead->id,
-            'school_name' => 'Original',
+        $this->assertDatabaseHas('customers', [
+            'id' => $customer->id,
+            'name' => 'Original',
         ]);
     }
 
@@ -370,15 +353,15 @@ class LeadTest extends TestCase
     {
         $branch = Branch::factory()->create();
         $sales = $this->makeUser('sales', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create([
+        $customer = Customer::factory()->forBranch($branch)->create([
             'assigned_user_id' => $sales->id,
         ]);
 
         $this->actingAs($sales)
-            ->delete(route('leads.destroy', $lead))
+            ->delete(route('customers.destroy', $customer))
             ->assertForbidden();
 
-        $this->assertDatabaseHas('leads', ['id' => $lead->id]);
+        $this->assertDatabaseHas('customers', ['id' => $customer->id]);
     }
 
     // ───────────────────── filter ─────────────────────
@@ -388,31 +371,15 @@ class LeadTest extends TestCase
         $branch = Branch::factory()->create();
         $admin = $this->makeUser('super-admin');
 
-        Lead::factory()->forBranch($branch)->status('new')->count(2)->create();
-        Lead::factory()->forBranch($branch)->status('won')->count(3)->create();
+        Customer::factory()->forBranch($branch)->status('new')->count(2)->create();
+        Customer::factory()->forBranch($branch)->status('won')->count(3)->create();
 
         $response = $this->actingAs($admin)
-            ->get(route('leads.index', ['status' => 'won']))
+            ->get(route('customers.index', ['status' => 'won']))
             ->assertOk();
 
-        $leads = $response->viewData('leads');
-        $this->assertSame(3, $leads->total());
-    }
-
-    public function test_filter_by_school_level(): void
-    {
-        $branch = Branch::factory()->create();
-        $admin = $this->makeUser('super-admin');
-
-        Lead::factory()->forBranch($branch)->count(2)->create(['school_level' => 'thpt']);
-        Lead::factory()->forBranch($branch)->count(4)->create(['school_level' => 'mam_non']);
-
-        $response = $this->actingAs($admin)
-            ->get(route('leads.index', ['school_level' => 'mam_non']))
-            ->assertOk();
-
-        $leads = $response->viewData('leads');
-        $this->assertSame(4, $leads->total());
+        $customers = $response->viewData('customers');
+        $this->assertSame(3, $customers->total());
     }
 
     public function test_filter_by_assigned_user_id(): void
@@ -421,15 +388,15 @@ class LeadTest extends TestCase
         $admin = $this->makeUser('super-admin');
         $sales = $this->makeUser('sales', $branch);
 
-        Lead::factory()->forBranch($branch)->count(2)->create(['assigned_user_id' => $sales->id]);
-        Lead::factory()->forBranch($branch)->count(3)->create(['assigned_user_id' => null]);
+        Customer::factory()->forBranch($branch)->count(2)->create(['assigned_user_id' => $sales->id]);
+        Customer::factory()->forBranch($branch)->count(3)->create(['assigned_user_id' => null]);
 
         $response = $this->actingAs($admin)
-            ->get(route('leads.index', ['assigned_user_id' => $sales->id]))
+            ->get(route('customers.index', ['assigned_user_id' => $sales->id]))
             ->assertOk();
 
-        $leads = $response->viewData('leads');
-        $this->assertSame(2, $leads->total());
+        $customers = $response->viewData('customers');
+        $this->assertSame(2, $customers->total());
     }
 
     // ───────────────────── assign ─────────────────────
@@ -439,14 +406,14 @@ class LeadTest extends TestCase
         $branch = Branch::factory()->create();
         $mgr = $this->makeUser('branch-manager', $branch);
         $sales = $this->makeUser('sales', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create();
+        $customer = Customer::factory()->forBranch($branch)->create();
 
         $this->actingAs($mgr)
-            ->post(route('leads.assign', $lead), ['assigned_user_id' => $sales->id])
-            ->assertRedirect(route('leads.show', $lead));
+            ->post(route('customers.assign', $customer), ['assigned_user_id' => $sales->id])
+            ->assertRedirect(route('customers.show', $customer));
 
-        $this->assertDatabaseHas('leads', [
-            'id' => $lead->id,
+        $this->assertDatabaseHas('customers', [
+            'id' => $customer->id,
             'assigned_user_id' => $sales->id,
         ]);
     }
@@ -457,15 +424,15 @@ class LeadTest extends TestCase
         $other = Branch::factory()->create();
         $mgr = $this->makeUser('branch-manager', $own);
         $foreignSales = $this->makeUser('sales', $other);
-        $lead = Lead::factory()->forBranch($own)->create();
+        $customer = Customer::factory()->forBranch($own)->create();
 
         $this->actingAs($mgr)
-            ->from(route('leads.show', $lead))
-            ->post(route('leads.assign', $lead), ['assigned_user_id' => $foreignSales->id])
+            ->from(route('customers.show', $customer))
+            ->post(route('customers.assign', $customer), ['assigned_user_id' => $foreignSales->id])
             ->assertSessionHasErrors('assigned_user_id');
 
-        $this->assertDatabaseHas('leads', [
-            'id' => $lead->id,
+        $this->assertDatabaseHas('customers', [
+            'id' => $customer->id,
             'assigned_user_id' => null,
         ]);
     }
@@ -474,12 +441,12 @@ class LeadTest extends TestCase
     {
         $branch = Branch::factory()->create();
         $sales = $this->makeUser('sales', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create([
+        $customer = Customer::factory()->forBranch($branch)->create([
             'assigned_user_id' => $sales->id,
         ]);
 
         $this->actingAs($sales)
-            ->post(route('leads.assign', $lead), ['assigned_user_id' => $sales->id])
+            ->post(route('customers.assign', $customer), ['assigned_user_id' => $sales->id])
             ->assertForbidden();
     }
 }

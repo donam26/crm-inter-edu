@@ -27,13 +27,13 @@
         </form>
     </x-card>
 
-    <x-table :headers="['Mã', 'Trường', 'Tổng', 'Đã thu', 'Trạng thái', 'Phát hành', 'Hạn', '']">
+    <x-table :headers="['Mã', 'Khách hàng', 'Tổng', 'Đã thu', 'Trạng thái', 'Phát hành', 'Hạn', '']">
         @forelse ($invoices as $inv)
             <tr>
                 <td class="px-4 py-3">
                     <a href="{{ route('invoices.show', $inv) }}" class="font-mono text-xs font-medium text-gray-900 hover:text-brand-700">{{ $inv->code }}</a>
                 </td>
-                <td class="px-4 py-3">{{ $inv->deal?->lead?->school_name ?? '—' }}</td>
+                <td class="px-4 py-3">{{ $inv->deal?->customer?->name ?? '—' }}</td>
                 <td class="px-4 py-3 text-right tabular-nums">{{ number_format($inv->total_amount) }} đ</td>
                 <td class="px-4 py-3 text-right tabular-nums text-green-700">{{ number_format($inv->paid_amount) }} đ</td>
                 <td class="px-4 py-3">

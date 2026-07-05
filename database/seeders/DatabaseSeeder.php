@@ -14,7 +14,7 @@ class DatabaseSeeder extends Seeder
      *    tài khoản super-admin. RolePermissionSeeder cũng tạo role cho các chi
      *    nhánh đang có (fresh prod chưa có chi nhánh → chỉ tạo phần toàn cục;
      *    role của chi nhánh mới do BranchService cấp khi tạo qua UI).
-     *  - DEMO (chỉ local): chi nhánh/người dùng/lead/deal... mẫu. KHÔNG bao giờ
+     *  - DEMO (chỉ local): chi nhánh/người dùng/customer/deal... mẫu. KHÔNG bao giờ
      *    lên production — nếu lỡ có, dọn bằng `php artisan demo:purge`.
      */
     public function run(): void

@@ -1,18 +1,17 @@
 <?php
 
-namespace App\Http\Requests\Lead;
+namespace App\Http\Requests\Customer;
 
-use App\Enums\LeadStatus;
-use App\Enums\SchoolLevel;
-use App\Models\Lead;
+use App\Enums\CustomerStatus;
+use App\Models\Customer;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
-class StoreLeadRequest extends FormRequest
+class StoreCustomerRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()?->can('create', Lead::class) ?? false;
+        return $this->user()?->can('create', Customer::class) ?? false;
     }
 
     public function rules(): array
@@ -25,11 +24,11 @@ class StoreLeadRequest extends FormRequest
                 'integer',
                 'exists:branches,id',
             ],
-            'school_name' => ['required', 'string', 'max:255'],
-            'school_level' => ['required', 'string', Rule::in(SchoolLevel::values())],
-            'student_size' => ['nullable', 'integer', 'min:0'],
+            'name' => ['required', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:30'],
+            'email' => ['nullable', 'email', 'max:255'],
             'address' => ['nullable', 'string', 'max:500'],
-            'status' => ['nullable', 'string', Rule::in(LeadStatus::values())],
+            'status' => ['nullable', 'string', Rule::in(CustomerStatus::values())],
             'assigned_user_id' => ['nullable', 'integer', 'exists:users,id'],
             'note' => ['nullable', 'string'],
         ];

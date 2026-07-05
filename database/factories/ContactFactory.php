@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Contact;
-use App\Models\Lead;
+use App\Models\Customer;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -16,13 +16,13 @@ class ContactFactory extends Factory
     public function definition(): array
     {
         return [
-            'lead_id' => Lead::factory(),
+            'customer_id' => Customer::factory(),
             'branch_id' => function (array $attrs) {
-                // Lấy branch_id của Lead cha (bypass BranchScope vì factory
+                // Lấy branch_id của Customer cha (bypass BranchScope vì factory
                 // có thể chạy ngoài request scope, hoặc với user khác branch).
-                $lead = Lead::withoutGlobalScopes()->find($attrs['lead_id']);
+                $customer = Customer::withoutGlobalScopes()->find($attrs['customer_id']);
 
-                return $lead?->branch_id;
+                return $customer?->branch_id;
             },
             'full_name' => $this->faker->name(),
             'position' => $this->faker->jobTitle(),
@@ -33,11 +33,11 @@ class ContactFactory extends Factory
         ];
     }
 
-    public function forLead(Lead $lead): self
+    public function forLead(Customer $customer): self
     {
         return $this->state(fn () => [
-            'lead_id' => $lead->id,
-            'branch_id' => $lead->branch_id,
+            'customer_id' => $customer->id,
+            'branch_id' => $customer->branch_id,
         ]);
     }
 

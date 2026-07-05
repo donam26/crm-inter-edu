@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Activity;
 use App\Models\Branch;
-use App\Models\Lead;
+use App\Models\Customer;
 use App\Models\Scopes\BranchScope;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\InteractsWithRbac;
@@ -25,9 +25,9 @@ class ActivityTest extends TestCase
     public function test_guest_redirected_when_creating_activity(): void
     {
         $branch = Branch::factory()->create();
-        $lead = Lead::factory()->forBranch($branch)->create();
+        $customer = Customer::factory()->forBranch($branch)->create();
 
-        $this->get(route('leads.activities.create', $lead))
+        $this->get(route('customers.activities.create', $customer))
             ->assertRedirect(route('login'));
     }
 
@@ -37,19 +37,19 @@ class ActivityTest extends TestCase
     {
         $admin = $this->makeUser('super-admin');
         $branch = Branch::factory()->create();
-        $lead = Lead::factory()->forBranch($branch)->create();
+        $customer = Customer::factory()->forBranch($branch)->create();
 
         $this->actingAs($admin)
-            ->post(route('leads.activities.store', $lead), [
+            ->post(route('customers.activities.store', $customer), [
                 'type' => 'meeting',
                 'subject' => 'Họp tư vấn',
                 'content' => 'Nội dung họp',
                 'happened_at' => now()->format('Y-m-d H:i:s'),
             ])
-            ->assertRedirect(route('leads.show', $lead));
+            ->assertRedirect(route('customers.show', $customer));
 
         $this->assertDatabaseHas('activities', [
-            'lead_id' => $lead->id,
+            'customer_id' => $customer->id,
             'branch_id' => $branch->id,
             'user_id' => $admin->id,
             'type' => 'meeting',
@@ -62,12 +62,12 @@ class ActivityTest extends TestCase
         $admin = $this->makeUser('super-admin');
         $branch = Branch::factory()->create();
         $sales = $this->makeUser('sales', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create();
-        $activity = Activity::factory()->forLead($lead)->create(['user_id' => $sales->id]);
+        $customer = Customer::factory()->forBranch($branch)->create();
+        $activity = Activity::factory()->forLead($customer)->create(['user_id' => $sales->id]);
 
         $this->actingAs($admin)
             ->delete(route('activities.destroy', $activity))
-            ->assertRedirect(route('leads.show', $lead->id));
+            ->assertRedirect(route('customers.show', $customer->id));
 
         $this->assertDatabaseMissing('activities', ['id' => $activity->id]);
     }
@@ -78,19 +78,19 @@ class ActivityTest extends TestCase
     {
         $branch = Branch::factory()->create();
         $mgr = $this->makeUser('branch-manager', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create();
+        $customer = Customer::factory()->forBranch($branch)->create();
 
         $this->actingAs($mgr)
-            ->post(route('leads.activities.store', $lead), [
+            ->post(route('customers.activities.store', $customer), [
                 'type' => 'call',
                 'subject' => 'Gọi tư vấn',
                 'content' => 'Đã trao đổi 30 phút.',
                 'happened_at' => now()->format('Y-m-d H:i:s'),
             ])
-            ->assertRedirect(route('leads.show', $lead));
+            ->assertRedirect(route('customers.show', $customer));
 
         $this->assertDatabaseHas('activities', [
-            'lead_id' => $lead->id,
+            'customer_id' => $customer->id,
             'branch_id' => $branch->id,
             'user_id' => $mgr->id,
             'type' => 'call',
@@ -102,8 +102,8 @@ class ActivityTest extends TestCase
     {
         $branch = Branch::factory()->create();
         $mgr = $this->makeUser('branch-manager', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create();
-        $activity = Activity::factory()->forLead($lead)->create([
+        $customer = Customer::factory()->forBranch($branch)->create();
+        $activity = Activity::factory()->forLead($customer)->create([
             'user_id' => $mgr->id,
             'subject' => 'Old subject',
             'type' => 'note',
@@ -116,7 +116,7 @@ class ActivityTest extends TestCase
                 'content' => 'Updated content',
                 'happened_at' => now()->format('Y-m-d H:i:s'),
             ])
-            ->assertRedirect(route('leads.show', $lead->id));
+            ->assertRedirect(route('customers.show', $customer->id));
 
         $this->assertDatabaseHas('activities', [
             'id' => $activity->id,
@@ -130,9 +130,9 @@ class ActivityTest extends TestCase
         $branchA = Branch::factory()->create();
         $branchB = Branch::factory()->create();
         $mgr = $this->makeUser('branch-manager', $branchA);
-        $lead = Lead::factory()->forBranch($branchB)->create();
+        $customer = Customer::factory()->forBranch($branchB)->create();
         $sales = $this->makeUser('sales', $branchB);
-        $activity = Activity::factory()->forLead($lead)->create(['user_id' => $sales->id]);
+        $activity = Activity::factory()->forLead($customer)->create(['user_id' => $sales->id]);
 
         // BranchScope ẩn activity thuộc branch khác → 404 model not found.
         $this->actingAs($mgr)
@@ -146,20 +146,20 @@ class ActivityTest extends TestCase
     {
         $branch = Branch::factory()->create();
         $sales = $this->makeUser('sales', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create([
+        $customer = Customer::factory()->forBranch($branch)->create([
             'assigned_user_id' => $sales->id,
         ]);
 
         $this->actingAs($sales)
-            ->post(route('leads.activities.store', $lead), [
+            ->post(route('customers.activities.store', $customer), [
                 'type' => 'call',
                 'subject' => 'My call',
                 'happened_at' => now()->format('Y-m-d H:i:s'),
             ])
-            ->assertRedirect(route('leads.show', $lead));
+            ->assertRedirect(route('customers.show', $customer));
 
         $this->assertDatabaseHas('activities', [
-            'lead_id' => $lead->id,
+            'customer_id' => $customer->id,
             'user_id' => $sales->id,
             'subject' => 'My call',
         ]);
@@ -170,12 +170,12 @@ class ActivityTest extends TestCase
         $branch = Branch::factory()->create();
         $sales = $this->makeUser('sales', $branch);
         $other = $this->makeUser('sales', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create([
+        $customer = Customer::factory()->forBranch($branch)->create([
             'assigned_user_id' => $other->id,
         ]);
 
         $this->actingAs($sales)
-            ->post(route('leads.activities.store', $lead), [
+            ->post(route('customers.activities.store', $customer), [
                 'type' => 'call',
                 'subject' => 'Cannot create',
                 'happened_at' => now()->format('Y-m-d H:i:s'),
@@ -183,7 +183,7 @@ class ActivityTest extends TestCase
             ->assertForbidden();
 
         $this->assertDatabaseMissing('activities', [
-            'lead_id' => $lead->id,
+            'customer_id' => $customer->id,
             'subject' => 'Cannot create',
         ]);
     }
@@ -194,16 +194,16 @@ class ActivityTest extends TestCase
     {
         $branch = Branch::factory()->create();
         $mgr = $this->makeUser('branch-manager', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create();
+        $customer = Customer::factory()->forBranch($branch)->create();
 
         $this->actingAs($mgr)
-            ->from(route('leads.activities.create', $lead))
-            ->post(route('leads.activities.store', $lead), [
+            ->from(route('customers.activities.create', $customer))
+            ->post(route('customers.activities.store', $customer), [
                 'type' => 'invalid-type',
                 'subject' => 'Bad type',
                 'happened_at' => now()->toDateTimeString(),
             ])
-            ->assertRedirect(route('leads.activities.create', $lead))
+            ->assertRedirect(route('customers.activities.create', $customer))
             ->assertSessionHasErrors('type');
 
         $this->assertDatabaseMissing('activities', ['subject' => 'Bad type']);
@@ -213,11 +213,11 @@ class ActivityTest extends TestCase
     {
         $branch = Branch::factory()->create();
         $mgr = $this->makeUser('branch-manager', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create();
+        $customer = Customer::factory()->forBranch($branch)->create();
 
         $this->actingAs($mgr)
-            ->from(route('leads.activities.create', $lead))
-            ->post(route('leads.activities.store', $lead), [
+            ->from(route('customers.activities.create', $customer))
+            ->post(route('customers.activities.store', $customer), [
                 'type' => 'call',
                 'happened_at' => now()->toDateTimeString(),
             ])
@@ -228,11 +228,11 @@ class ActivityTest extends TestCase
     {
         $branch = Branch::factory()->create();
         $mgr = $this->makeUser('branch-manager', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create();
+        $customer = Customer::factory()->forBranch($branch)->create();
 
         $this->actingAs($mgr)
-            ->from(route('leads.activities.create', $lead))
-            ->post(route('leads.activities.store', $lead), [
+            ->from(route('customers.activities.create', $customer))
+            ->post(route('customers.activities.store', $customer), [
                 'type' => 'call',
                 'subject' => 'No time',
             ])
@@ -247,17 +247,17 @@ class ActivityTest extends TestCase
         $other = Branch::factory()->create();
         $mgr = $this->makeUser('branch-manager', $own);
         $intruder = $this->makeUser('sales', $other);
-        $lead = Lead::factory()->forBranch($own)->create();
-        $foreignLead = Lead::factory()->forBranch($other)->create();
+        $customer = Customer::factory()->forBranch($own)->create();
+        $foreignLead = Customer::factory()->forBranch($other)->create();
 
         $this->actingAs($mgr)
-            ->post(route('leads.activities.store', $lead), [
+            ->post(route('customers.activities.store', $customer), [
                 'type' => 'note',
                 'subject' => 'Hack Attempt',
                 'happened_at' => now()->toDateTimeString(),
                 'user_id' => $intruder->id,
                 'branch_id' => $other->id,
-                'lead_id' => $foreignLead->id,
+                'customer_id' => $foreignLead->id,
             ])
             ->assertRedirect();
 
@@ -268,7 +268,7 @@ class ActivityTest extends TestCase
         $this->assertNotNull($activity);
         $this->assertSame($mgr->id, $activity->user_id);
         $this->assertSame($own->id, $activity->branch_id);
-        $this->assertSame($lead->id, $activity->lead_id);
+        $this->assertSame($customer->id, $activity->customer_id);
     }
 
     public function test_update_ignores_user_supplied_user_branch_and_lead_id(): void
@@ -277,9 +277,9 @@ class ActivityTest extends TestCase
         $other = Branch::factory()->create();
         $mgr = $this->makeUser('branch-manager', $branch);
         $intruder = $this->makeUser('sales', $other);
-        $lead = Lead::factory()->forBranch($branch)->create();
-        $foreignLead = Lead::factory()->forBranch($other)->create();
-        $activity = Activity::factory()->forLead($lead)->create([
+        $customer = Customer::factory()->forBranch($branch)->create();
+        $foreignLead = Customer::factory()->forBranch($other)->create();
+        $activity = Activity::factory()->forLead($customer)->create([
             'user_id' => $mgr->id,
             'subject' => 'Original',
             'type' => 'note',
@@ -292,14 +292,14 @@ class ActivityTest extends TestCase
                 'happened_at' => now()->toDateTimeString(),
                 'user_id' => $intruder->id,
                 'branch_id' => $other->id,
-                'lead_id' => $foreignLead->id,
+                'customer_id' => $foreignLead->id,
             ])
             ->assertRedirect();
 
         $activity->refresh();
         $this->assertSame($mgr->id, $activity->user_id);
         $this->assertSame($branch->id, $activity->branch_id);
-        $this->assertSame($lead->id, $activity->lead_id);
+        $this->assertSame($customer->id, $activity->customer_id);
         $this->assertSame('Updated', $activity->subject);
     }
 
@@ -309,21 +309,21 @@ class ActivityTest extends TestCase
     {
         $branch = Branch::factory()->create();
         $mgr = $this->makeUser('branch-manager', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create();
+        $customer = Customer::factory()->forBranch($branch)->create();
 
-        Activity::factory()->forLead($lead)->create([
+        Activity::factory()->forLead($customer)->create([
             'user_id' => $mgr->id,
             'subject' => 'Older activity',
             'happened_at' => now()->subDays(5),
         ]);
-        Activity::factory()->forLead($lead)->create([
+        Activity::factory()->forLead($customer)->create([
             'user_id' => $mgr->id,
             'subject' => 'Newer activity',
             'happened_at' => now()->subDay(),
         ]);
 
         $response = $this->actingAs($mgr)
-            ->get(route('leads.show', $lead))
+            ->get(route('customers.show', $customer))
             ->assertOk();
         $content = $response->getContent();
 
@@ -341,12 +341,12 @@ class ActivityTest extends TestCase
     {
         $branch = Branch::factory()->create();
         $mgr = $this->makeUser('branch-manager', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create();
+        $customer = Customer::factory()->forBranch($branch)->create();
 
         $past = now()->subDays(10)->startOfMinute();
 
         $this->actingAs($mgr)
-            ->post(route('leads.activities.store', $lead), [
+            ->post(route('customers.activities.store', $customer), [
                 'type' => 'note',
                 'subject' => 'Backdated note',
                 'happened_at' => $past->format('Y-m-d H:i:s'),
@@ -377,22 +377,22 @@ class ActivityTest extends TestCase
     {
         $branch = Branch::factory()->create();
         $sales = $this->makeUser('sales', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create();
-        Activity::factory()->forLead($lead)->count(3)->create(['user_id' => $sales->id]);
+        $customer = Customer::factory()->forBranch($branch)->create();
+        Activity::factory()->forLead($customer)->count(3)->create(['user_id' => $sales->id]);
 
         $this->assertSame(
             3,
             Activity::withoutGlobalScope(BranchScope::class)
-                ->where('lead_id', $lead->id)
+                ->where('customer_id', $customer->id)
                 ->count()
         );
 
-        $lead->delete();
+        $customer->delete();
 
         $this->assertSame(
             0,
             Activity::withoutGlobalScope(BranchScope::class)
-                ->where('lead_id', $lead->id)
+                ->where('customer_id', $customer->id)
                 ->count()
         );
     }

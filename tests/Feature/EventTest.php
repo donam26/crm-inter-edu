@@ -6,7 +6,7 @@ use App\Enums\EventStatus;
 use App\Enums\EventType;
 use App\Models\Branch;
 use App\Models\Event;
-use App\Models\Lead;
+use App\Models\Customer;
 use App\Models\Scopes\BranchScope;
 use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -203,11 +203,11 @@ class EventTest extends TestCase
         $branch = Branch::factory()->create();
         $owner = $this->makeUser('sales', $branch);
         $organizer = $this->makeUser('sales', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create([
+        $customer = Customer::factory()->forBranch($branch)->create([
             'assigned_user_id' => $owner->id,
         ]);
         $event = Event::factory()->forBranchUser($organizer)->create([
-            'lead_id' => $lead->id,
+            'customer_id' => $customer->id,
         ]);
 
         $this->actingAs($owner)
@@ -268,15 +268,15 @@ class EventTest extends TestCase
         $branchB = Branch::factory()->create();
         $admin = $this->makeUser('super-admin');
         $sales = $this->makeUser('sales', $branchA);
-        $foreignLead = Lead::factory()->forBranch($branchB)->create();
+        $foreignLead = Customer::factory()->forBranch($branchB)->create();
 
         $this->actingAs($admin)
             ->from(route('events.create'))
             ->post(route('events.store'), $this->basePayload([
                 'organizer_user_id' => $sales->id,
-                'lead_id' => $foreignLead->id,
+                'customer_id' => $foreignLead->id,
             ]))
-            ->assertSessionHasErrors('lead_id');
+            ->assertSessionHasErrors('customer_id');
     }
 
     public function test_validation_attendees_must_be_distinct(): void
@@ -502,22 +502,22 @@ class EventTest extends TestCase
         $this->assertFalse($done->is_overdue);
     }
 
-    // ───────────────────── lead cascade ─────────────────────
+    // ───────────────────── customer cascade ─────────────────────
 
     public function test_deleting_lead_cascades_to_events(): void
     {
         $branch = Branch::factory()->create();
         $mgr = $this->makeUser('branch-manager', $branch);
-        $lead = Lead::factory()->forBranch($branch)->create();
+        $customer = Customer::factory()->forBranch($branch)->create();
 
-        Event::factory()->forBranchUser($mgr)->count(2)->create(['lead_id' => $lead->id]);
+        Event::factory()->forBranchUser($mgr)->count(2)->create(['customer_id' => $customer->id]);
 
         $this->assertSame(2, Event::withoutGlobalScope(BranchScope::class)
-            ->where('lead_id', $lead->id)->count());
+            ->where('customer_id', $customer->id)->count());
 
-        $lead->delete();
+        $customer->delete();
 
         $this->assertSame(0, Event::withoutGlobalScope(BranchScope::class)
-            ->where('lead_id', $lead->id)->count());
+            ->where('customer_id', $customer->id)->count());
     }
 }

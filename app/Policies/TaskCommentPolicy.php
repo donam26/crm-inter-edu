@@ -13,7 +13,7 @@ class TaskCommentPolicy
 
     /**
      * Chỉ ai XEM được task mới bình luận được — tái dụng đúng logic
-     * TaskPolicy@view (view-all / là assignee / phụ trách lead của task).
+     * TaskPolicy@view (view-all / là assignee / phụ trách customer của task).
      * KHÔNG hạ xuống chỉ sameBranch: người cùng chi nhánh nhưng ngoài phạm vi
      * không mở được task thì cũng không được bình luận.
      */

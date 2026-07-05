@@ -14,7 +14,7 @@ class Contact extends Model
     use HasFactory;
 
     protected $fillable = [
-        'lead_id',
+        'customer_id',
         'branch_id',
         'full_name',
         'position',
@@ -33,9 +33,9 @@ class Contact extends Model
         static::addGlobalScope(new BranchScope);
     }
 
-    public function lead(): BelongsTo
+    public function customer(): BelongsTo
     {
-        return $this->belongsTo(Lead::class);
+        return $this->belongsTo(Customer::class);
     }
 
     public function branch(): BelongsTo

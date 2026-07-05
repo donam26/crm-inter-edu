@@ -4,7 +4,7 @@ namespace Database\Factories;
 
 use App\Enums\ActivityType;
 use App\Models\Activity;
-use App\Models\Lead;
+use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -18,13 +18,13 @@ class ActivityFactory extends Factory
     public function definition(): array
     {
         return [
-            'lead_id' => Lead::factory(),
+            'customer_id' => Customer::factory(),
             'branch_id' => function (array $attrs) {
-                // Lấy branch_id từ Lead cha (bypass BranchScope vì factory
+                // Lấy branch_id từ Customer cha (bypass BranchScope vì factory
                 // có thể chạy ngoài request scope).
-                $lead = Lead::withoutGlobalScopes()->find($attrs['lead_id']);
+                $customer = Customer::withoutGlobalScopes()->find($attrs['customer_id']);
 
-                return $lead?->branch_id;
+                return $customer?->branch_id;
             },
             'user_id' => function (array $attrs) {
                 // Ưu tiên user thuộc cùng branch để dữ liệu seed nhất quán.
@@ -43,18 +43,18 @@ class ActivityFactory extends Factory
         ];
     }
 
-    public function forLead(Lead $lead): self
+    public function forLead(Customer $customer): self
     {
-        return $this->state(function () use ($lead) {
+        return $this->state(function () use ($customer) {
             $user = User::query()
-                ->where('branch_id', $lead->branch_id)
+                ->where('branch_id', $customer->branch_id)
                 ->inRandomOrder()
                 ->first()
                 ?? User::query()->inRandomOrder()->first();
 
             return [
-                'lead_id' => $lead->id,
-                'branch_id' => $lead->branch_id,
+                'customer_id' => $customer->id,
+                'branch_id' => $customer->branch_id,
                 'user_id' => $user?->id ?? User::factory(),
             ];
         });

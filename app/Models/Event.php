@@ -22,7 +22,7 @@ class Event extends Model
         'branch_id',
         'organizer_user_id',
         'created_by',
-        'lead_id',
+        'customer_id',
         'title',
         'description',
         'type',
@@ -68,9 +68,9 @@ class Event extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function lead(): BelongsTo
+    public function customer(): BelongsTo
     {
-        return $this->belongsTo(Lead::class);
+        return $this->belongsTo(Customer::class);
     }
 
     public function attendees(): BelongsToMany

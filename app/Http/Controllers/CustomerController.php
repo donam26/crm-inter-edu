@@ -2,26 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\LeadStatus;
-use App\Enums\SchoolLevel;
-use App\Http\Requests\Lead\StoreLeadRequest;
-use App\Http\Requests\Lead\UpdateLeadRequest;
+use App\Enums\CustomerStatus;
+use App\Http\Requests\Customer\StoreCustomerRequest;
+use App\Http\Requests\Customer\UpdateCustomerRequest;
 use App\Models\Branch;
-use App\Models\Lead;
+use App\Models\Customer;
 use App\Models\User;
-use App\Services\LeadService;
+use App\Services\CustomerService;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
-class LeadController extends Controller
+class CustomerController extends Controller
 {
-    public function __construct(private LeadService $service) {}
+    public function __construct(private CustomerService $service) {}
 
     public function index(Request $request)
     {
-        $this->authorize('viewAny', Lead::class);
+        $this->authorize('viewAny', Customer::class);
 
-        $filters = $request->only(['status', 'school_level', 'assigned_user_id', 'branch_id']);
+        $filters = $request->only(['status', 'assigned_user_id', 'branch_id']);
 
         // Chỉ super-admin được phép filter theo branch_id; với role khác,
         // BranchScope đã giới hạn dữ liệu nên bỏ qua filter này để tránh nhầm lẫn.
@@ -29,113 +28,110 @@ class LeadController extends Controller
             unset($filters['branch_id']);
         }
 
-        $leads = $this->service->list($filters);
+        $customers = $this->service->list($filters);
 
         $branches = $request->user()?->hasRole('super-admin')
             ? Branch::orderBy('name')->get()
             : collect();
 
-        return view('leads.index', [
-            'leads' => $leads,
+        return view('customers.index', [
+            'customers' => $customers,
             'branches' => $branches,
-            'statuses' => LeadStatus::cases(),
-            'levels' => SchoolLevel::cases(),
+            'statuses' => CustomerStatus::cases(),
             'filters' => $filters,
         ]);
     }
 
     public function create(Request $request)
     {
-        $this->authorize('create', Lead::class);
+        $this->authorize('create', Customer::class);
 
         if (! $this->wantsModalForm()) {
-            return redirect()->route('leads.index');
+            return redirect()->route('customers.index');
         }
 
         $user = $request->user();
         $isSuperAdmin = $user?->hasRole('super-admin') ?? false;
 
-        return view('leads.create', [
-            'statuses' => LeadStatus::cases(),
-            'levels' => SchoolLevel::cases(),
+        return view('customers.create', [
+            'statuses' => CustomerStatus::cases(),
             // Super-admin chọn chi nhánh ngay trên form → cần user của mọi chi
             // nhánh (kèm branch_id) để lọc người phụ trách theo chi nhánh đã chọn.
             // User thường chỉ thấy người trong chi nhánh của mình.
             'branchUsers' => $isSuperAdmin
                 ? $this->assignableUsers()
                 : $this->branchUsers($user?->branch_id),
-            // Super-admin không thuộc chi nhánh nào → phải tự chọn branch cho lead.
+            // Super-admin không thuộc chi nhánh nào → phải tự chọn branch cho customer.
             'branches' => $isSuperAdmin
                 ? Branch::orderBy('name')->get()
                 : collect(),
         ]);
     }
 
-    public function store(StoreLeadRequest $request)
+    public function store(StoreCustomerRequest $request)
     {
-        $lead = $this->service->create($request->validated());
+        $customer = $this->service->create($request->validated());
 
-        return $this->modalRedirect(route('leads.show', $lead), 'Đã tạo lead.');
+        return $this->modalRedirect(route('customers.show', $customer), 'Đã tạo khách hàng.');
     }
 
-    public function show(Lead $lead)
+    public function show(Customer $customer)
     {
-        $this->authorize('view', $lead);
-        $lead->load(['branch', 'assignedUser']);
+        $this->authorize('view', $customer);
+        $customer->load(['branch', 'assignedUser']);
 
-        return view('leads.show', [
-            'lead' => $lead,
-            'branchUsers' => $this->branchUsers($lead->branch_id),
+        return view('customers.show', [
+            'customer' => $customer,
+            'branchUsers' => $this->branchUsers($customer->branch_id),
         ]);
     }
 
-    public function edit(Lead $lead)
+    public function edit(Customer $customer)
     {
-        $this->authorize('update', $lead);
+        $this->authorize('update', $customer);
 
         if (! $this->wantsModalForm()) {
-            return redirect()->route('leads.show', $lead);
+            return redirect()->route('customers.show', $customer);
         }
 
-        return view('leads.edit', [
-            'lead' => $lead,
-            'statuses' => LeadStatus::cases(),
-            'levels' => SchoolLevel::cases(),
-            'branchUsers' => $this->branchUsers($lead->branch_id),
+        return view('customers.edit', [
+            'customer' => $customer,
+            'statuses' => CustomerStatus::cases(),
+            'branchUsers' => $this->branchUsers($customer->branch_id),
         ]);
     }
 
-    public function update(UpdateLeadRequest $request, Lead $lead)
+    public function update(UpdateCustomerRequest $request, Customer $customer)
     {
-        $this->service->update($lead, $request->validated());
+        $this->service->update($customer, $request->validated());
 
-        return $this->modalRedirect(route('leads.show', $lead), 'Đã cập nhật lead.');
+        return $this->modalRedirect(route('customers.show', $customer), 'Đã cập nhật khách hàng.');
     }
 
-    public function destroy(Lead $lead)
+    public function destroy(Customer $customer)
     {
-        $this->authorize('delete', $lead);
-        $this->service->delete($lead);
+        $this->authorize('delete', $customer);
+        $this->service->delete($customer);
 
-        return redirect()->route('leads.index')
-            ->with('success', 'Đã xóa lead.');
+        return redirect()->route('customers.index')
+            ->with('success', 'Đã xóa khách hàng.');
     }
 
-    public function assign(Request $request, Lead $lead)
+    public function assign(Request $request, Customer $customer)
     {
-        $this->authorize('assign', $lead);
+        $this->authorize('assign', $customer);
 
         $data = $request->validate([
             'assigned_user_id' => ['nullable', 'integer', 'exists:users,id'],
         ]);
 
         try {
-            $this->service->assign($lead, $data['assigned_user_id'] ?? null);
+            $this->service->assign($customer, $data['assigned_user_id'] ?? null);
         } catch (ValidationException $e) {
             return back()->withErrors($e->errors());
         }
 
-        return redirect()->route('leads.show', $lead)
+        return redirect()->route('customers.show', $customer)
             ->with('success', 'Đã cập nhật người phụ trách.');
     }
 

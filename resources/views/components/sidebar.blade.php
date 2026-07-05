@@ -26,10 +26,10 @@
         {{-- ───────── Bán hàng & CSKH ───────── --}}
         <p class="px-3 pt-5 pb-1 text-[11px] font-semibold uppercase tracking-wider text-gray-400">Bán hàng &amp; CSKH</p>
 
-        @can('leads.view')
-            @if (Route::has('leads.index'))
-                <x-nav-link :href="route('leads.index')" icon="leads" :active="request()->routeIs('leads.*')">
-                    Khách hàng tiềm năng
+        @can('customers.view')
+            @if (Route::has('customers.index'))
+                <x-nav-link :href="route('customers.index')" icon="customers" :active="request()->routeIs('customers.*')">
+                    Khách hàng
                 </x-nav-link>
             @endif
         @endcan

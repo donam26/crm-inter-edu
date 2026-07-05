@@ -1,5 +1,5 @@
 {{-- Modal content (nạp qua AJAX). Không bọc layout. --}}
-<form method="POST" action="{{ route('leads.contacts.store', $lead) }}">
+<form method="POST" action="{{ route('customers.contacts.store', $customer) }}">
     @csrf
 
     <x-input name="full_name" label="Họ tên" required />

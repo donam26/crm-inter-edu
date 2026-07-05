@@ -2,12 +2,12 @@
 
 namespace App\Services;
 
+use App\Enums\CustomerStatus;
 use App\Enums\DealStage;
-use App\Enums\LeadStatus;
 use App\Exceptions\RevenueWorkflowException;
+use App\Models\Customer;
 use App\Models\Deal;
 use App\Models\DealItem;
-use App\Models\Lead;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -23,7 +23,7 @@ class DealService
     public function list(array $filters = []): LengthAwarePaginator
     {
         return Deal::query()
-            ->with(['branch', 'lead', 'owner'])
+            ->with(['branch', 'customer', 'owner'])
             ->when($filters['stage'] ?? null, fn ($q, $v) => $q->where('stage', $v))
             ->when($filters['owner_user_id'] ?? null, fn ($q, $v) => $q->where('owner_user_id', $v))
             ->when($filters['branch_id'] ?? null, fn ($q, $v) => $q->where('branch_id', $v))
@@ -37,13 +37,13 @@ class DealService
     }
 
     /**
-     * Tạo deal mới gắn với 1 Lead. Enforce 1 Lead = 1 Deal qua DB unique.
+     * Tạo deal mới gắn với 1 Customer. Enforce 1 Customer = 1 Deal qua DB unique.
      *
      * Service-layer injection bắt buộc:
-     *  - branch_id   ← từ Lead cha (không lấy từ auth, vì super-admin có
+     *  - branch_id   ← từ Customer cha (không lấy từ auth, vì super-admin có
      *    thể đang tạo deal hộ branch khác)
      *  - created_by  ← Auth::id()
-     *  - owner       ← input hoặc fallback về lead.assigned_user_id
+     *  - owner       ← input hoặc fallback về customer.assigned_user_id
      *  - amounts     ← khởi tạo 0 (sẽ recompute khi thêm item)
      *
      * @param  array<string, mixed>  $data
@@ -52,39 +52,39 @@ class DealService
     {
         return DB::transaction(function () use ($data) {
             $authUser = Auth::user();
-            $lead = Lead::withoutGlobalScopes()->findOrFail($data['lead_id']);
+            $customer = Customer::withoutGlobalScopes()->findOrFail($data['customer_id']);
 
-            $this->guardLeadBranchAccess($authUser, $lead);
+            $this->guardCustomerBranchAccess($authUser, $customer);
 
-            // Enforce 1-Lead-1-Deal ở Service-layer (DB unique là hàng rào cuối).
-            if (Deal::withoutGlobalScopes()->where('lead_id', $lead->id)->exists()) {
+            // Enforce 1-Customer-1-Deal ở Service-layer (DB unique là hàng rào cuối).
+            if (Deal::withoutGlobalScopes()->where('customer_id', $customer->id)->exists()) {
                 throw ValidationException::withMessages([
-                    'lead_id' => 'Lead này đã có deal. Mỗi lead chỉ có 1 deal.',
+                    'customer_id' => 'Khách hàng này đã có deal. Mỗi khách hàng chỉ có 1 deal.',
                 ]);
             }
 
-            // Resolve owner: input > lead.assigned_user_id > null. Nếu có, phải cùng branch.
-            $ownerId = $data['owner_user_id'] ?? $lead->assigned_user_id;
+            // Resolve owner: input > customer.assigned_user_id > null. Nếu có, phải cùng branch.
+            $ownerId = $data['owner_user_id'] ?? $customer->assigned_user_id;
             if ($ownerId !== null) {
                 $owner = User::find($ownerId);
-                if (! $owner || (int) $owner->branch_id !== (int) $lead->branch_id) {
+                if (! $owner || (int) $owner->branch_id !== (int) $customer->branch_id) {
                     throw ValidationException::withMessages([
-                        'owner_user_id' => 'Người phụ trách phải thuộc cùng chi nhánh với lead.',
+                        'owner_user_id' => 'Người phụ trách phải thuộc cùng chi nhánh với khách hàng.',
                     ]);
                 }
             }
 
             $payload = [
-                'branch_id' => $lead->branch_id,
-                'lead_id' => $lead->id,
+                'branch_id' => $customer->branch_id,
+                'customer_id' => $customer->id,
                 'owner_user_id' => $ownerId,
                 'created_by' => $authUser?->id,
-                'code' => $this->generateCode($lead->branch_id),
-                'title' => $data['title'] ?? ('Deal - '.$lead->school_name),
+                'code' => $this->generateCode($customer->branch_id),
+                'title' => $data['title'] ?? ('Deal - '.$customer->name),
                 'subtotal_amount' => 0,
                 'tax_amount' => 0,
                 'total_amount' => 0,
-                'stage' => DealStage::Lead->value,
+                'stage' => DealStage::Customer->value,
                 'expected_close_date' => $data['expected_close_date'] ?? null,
                 'actual_close_date' => null,
                 'note' => $data['note'] ?? null,
@@ -105,7 +105,7 @@ class DealService
             // Chặn override các field auto-set / state-machine.
             unset(
                 $data['branch_id'],
-                $data['lead_id'],
+                $data['customer_id'],
                 $data['created_by'],
                 $data['code'],
                 $data['stage'],
@@ -145,7 +145,7 @@ class DealService
 
     /**
      * Đánh dấu deal thắng. Yêu cầu có ≥ 1 item.
-     * Side-effect: đồng bộ Lead.status = won, set actual_close_date = today.
+     * Side-effect: đồng bộ Customer.status = won, set actual_close_date = today.
      */
     public function win(Deal $deal): Deal
     {
@@ -167,18 +167,18 @@ class DealService
                 'actual_close_date' => now()->toDateString(),
             ]);
 
-            // Đồng bộ Lead.status = won (bypass scope vì có thể super-admin
+            // Đồng bộ Customer.status = won (bypass scope vì có thể super-admin
             // đang thao tác trên branch khác).
-            Lead::withoutGlobalScopes()
-                ->where('id', $deal->lead_id)
-                ->update(['status' => LeadStatus::Won->value]);
+            Customer::withoutGlobalScopes()
+                ->where('id', $deal->customer_id)
+                ->update(['status' => CustomerStatus::Won->value]);
 
             return $deal->fresh();
         });
     }
 
     /**
-     * Đánh dấu deal mất. Side-effect: đồng bộ Lead.status = lost.
+     * Đánh dấu deal mất. Side-effect: đồng bộ Customer.status = lost.
      */
     public function lose(Deal $deal, ?string $reason = null): Deal
     {
@@ -199,9 +199,9 @@ class DealService
 
             $deal->update($update);
 
-            Lead::withoutGlobalScopes()
-                ->where('id', $deal->lead_id)
-                ->update(['status' => LeadStatus::Lost->value]);
+            Customer::withoutGlobalScopes()
+                ->where('id', $deal->customer_id)
+                ->update(['status' => CustomerStatus::Lost->value]);
 
             return $deal->fresh();
         });
@@ -373,7 +373,7 @@ class DealService
         ]);
     }
 
-    private function guardLeadBranchAccess(?User $authUser, Lead $lead): void
+    private function guardCustomerBranchAccess(?User $authUser, Customer $customer): void
     {
         if ($authUser === null) {
             return;
@@ -381,9 +381,9 @@ class DealService
         if ($authUser->hasRole('super-admin')) {
             return;
         }
-        if ((int) $authUser->branch_id !== (int) $lead->branch_id) {
+        if ((int) $authUser->branch_id !== (int) $customer->branch_id) {
             throw ValidationException::withMessages([
-                'lead_id' => 'Lead không thuộc chi nhánh của bạn.',
+                'customer_id' => 'Khách hàng không thuộc chi nhánh của bạn.',
             ]);
         }
     }

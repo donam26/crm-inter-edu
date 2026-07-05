@@ -101,19 +101,19 @@ class RoleTest extends TestCase
     {
         $admin = $this->makeUser('super-admin');
         $branch = Branch::factory()->create();
-        $role = $this->makeRole('Custom', $branch, ['leads.view']);
+        $role = $this->makeRole('Custom', $branch, ['customers.view']);
 
         $this->actingAs($admin)
             ->put(route('roles.update', $role), [
                 'name' => 'Custom Renamed',
-                'permissions' => ['leads.view', 'leads.create'],
+                'permissions' => ['customers.view', 'customers.create'],
             ])
             ->assertRedirect(route('roles.index'));
 
         $role->refresh();
         $this->assertSame('Custom Renamed', $role->name);
         $this->assertEqualsCanonicalizing(
-            ['leads.view', 'leads.create'],
+            ['customers.view', 'customers.create'],
             $this->rolePermissionNames($role),
         );
     }
@@ -122,7 +122,7 @@ class RoleTest extends TestCase
     {
         $admin = $this->makeUser('super-admin');
         $branch = Branch::factory()->create();
-        $role = $this->makeRole('Disposable', $branch, ['leads.view']);
+        $role = $this->makeRole('Disposable', $branch, ['customers.view']);
 
         $this->actingAs($admin)
             ->delete(route('roles.destroy', $role))
@@ -171,7 +171,7 @@ class RoleTest extends TestCase
         $this->actingAs($mgr)
             ->post(route('roles.store'), [
                 'name' => 'Telesales',
-                'permissions' => ['leads.view', 'leads.create', 'contacts.view'],
+                'permissions' => ['customers.view', 'customers.create', 'contacts.view'],
             ])
             ->assertRedirect(route('roles.index'));
 
@@ -181,7 +181,7 @@ class RoleTest extends TestCase
         $this->assertSame($branch->id, $role->branch_id);
         $this->assertFalse($role->is_system);
         $this->assertEqualsCanonicalizing(
-            ['leads.view', 'leads.create', 'contacts.view'],
+            ['customers.view', 'customers.create', 'contacts.view'],
             $this->rolePermissionNames($role),
         );
     }
@@ -190,19 +190,19 @@ class RoleTest extends TestCase
     {
         $branch = Branch::factory()->create();
         $mgr = $this->makeUser('branch-manager', $branch);
-        $role = $this->makeRole('Editable', $branch, ['leads.view']);
+        $role = $this->makeRole('Editable', $branch, ['customers.view']);
 
         $this->actingAs($mgr)
             ->put(route('roles.update', $role), [
                 'name' => 'Editable Updated',
-                'permissions' => ['leads.view', 'tasks.view'],
+                'permissions' => ['customers.view', 'tasks.view'],
             ])
             ->assertRedirect(route('roles.index'));
 
         $role->refresh();
         $this->assertSame('Editable Updated', $role->name);
         $this->assertEqualsCanonicalizing(
-            ['leads.view', 'tasks.view'],
+            ['customers.view', 'tasks.view'],
             $this->rolePermissionNames($role),
         );
     }
@@ -211,7 +211,7 @@ class RoleTest extends TestCase
     {
         $branch = Branch::factory()->create();
         $mgr = $this->makeUser('branch-manager', $branch);
-        $role = $this->makeRole('Trash', $branch, ['leads.view']);
+        $role = $this->makeRole('Trash', $branch, ['customers.view']);
 
         $this->actingAs($mgr)
             ->delete(route('roles.destroy', $role))
@@ -233,7 +233,7 @@ class RoleTest extends TestCase
         $this->actingAs($mgr)
             ->put(route('roles.update', $systemRole), [
                 'name' => 'Hacked Name',
-                'permissions' => ['leads.view'],
+                'permissions' => ['customers.view'],
             ])
             ->assertForbidden();
 
@@ -264,12 +264,12 @@ class RoleTest extends TestCase
         $own = Branch::factory()->create();
         $other = Branch::factory()->create();
         $mgr = $this->makeUser('branch-manager', $own);
-        $foreignRole = $this->makeRole('Foreign Custom', $other, ['leads.view']);
+        $foreignRole = $this->makeRole('Foreign Custom', $other, ['customers.view']);
 
         $this->actingAs($mgr)
             ->put(route('roles.update', $foreignRole), [
                 'name' => 'Stolen',
-                'permissions' => ['leads.view'],
+                'permissions' => ['customers.view'],
             ])
             ->assertForbidden();
 
@@ -282,7 +282,7 @@ class RoleTest extends TestCase
         $own = Branch::factory()->create();
         $other = Branch::factory()->create();
         $mgr = $this->makeUser('branch-manager', $own);
-        $foreignRole = $this->makeRole('Foreign Disposable', $other, ['leads.view']);
+        $foreignRole = $this->makeRole('Foreign Disposable', $other, ['customers.view']);
 
         $this->actingAs($mgr)
             ->delete(route('roles.destroy', $foreignRole))
@@ -304,7 +304,7 @@ class RoleTest extends TestCase
             ->from(route('roles.index'))
             ->post(route('roles.store'), [
                 'name' => 'Sneaky Global',
-                'permissions' => ['leads.view', 'branches.create'],
+                'permissions' => ['customers.view', 'branches.create'],
             ])
             ->assertSessionHasErrors('permissions.1');
 
@@ -337,7 +337,7 @@ class RoleTest extends TestCase
         $this->actingAs($sales)
             ->post(route('roles.store'), [
                 'name' => 'Nope',
-                'permissions' => ['leads.view'],
+                'permissions' => ['customers.view'],
             ])
             ->assertForbidden();
 
@@ -354,7 +354,7 @@ class RoleTest extends TestCase
         $this->actingAs($mgr)
             ->from(route('roles.index'))
             ->post(route('roles.store'), [
-                'permissions' => ['leads.view'],
+                'permissions' => ['customers.view'],
             ])
             ->assertSessionHasErrors('name');
     }
@@ -365,13 +365,13 @@ class RoleTest extends TestCase
         $mgr = $this->makeUser('branch-manager', $branch);
         // Tạo role đầu tiên qua đúng luồng ứng dụng (RoleService) để mô phỏng
         // dữ liệu thực; sau đó tên trùng phải bị rule unique chặn.
-        app(RoleService::class)->create($mgr, ['name' => 'Duplicate', 'permissions' => ['leads.view']]);
+        app(RoleService::class)->create($mgr, ['name' => 'Duplicate', 'permissions' => ['customers.view']]);
 
         $this->actingAs($mgr)
             ->from(route('roles.index'))
             ->post(route('roles.store'), [
                 'name' => 'Duplicate',
-                'permissions' => ['leads.view'],
+                'permissions' => ['customers.view'],
             ])
             ->assertSessionHasErrors('name');
 

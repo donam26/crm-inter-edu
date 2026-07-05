@@ -31,7 +31,7 @@ class StoreTaskRequest extends FormRequest
             // Khi tạo mới: due_at không được trong quá khứ.
             'due_at' => ['required', 'date', 'after_or_equal:now'],
             'assigned_user_id' => ['required', 'integer', 'exists:users,id'],
-            'lead_id' => ['nullable', 'integer', 'exists:leads,id'],
+            'customer_id' => ['nullable', 'integer', 'exists:customers,id'],
             'reminder_enabled' => ['boolean'],
             'remind_at' => ['nullable', 'date', 'before_or_equal:due_at'],
         ];

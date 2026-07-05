@@ -6,7 +6,7 @@ use Illuminate\Database\Seeder;
 
 /**
  * Dữ liệu DEMO/mẫu — chỉ dùng ở môi trường local/dev để có sẵn chi nhánh, người
- * dùng, lead, deal... khi phát triển. TUYỆT ĐỐI không seed lên production (đây
+ * dùng, customer, deal... khi phát triển. TUYỆT ĐỐI không seed lên production (đây
  * là nguồn gốc của "user ảo / gói sản phẩm ảo" mà khách phản ánh).
  *
  * DatabaseSeeder chỉ gọi seeder này khi app()->environment('local').
@@ -22,7 +22,7 @@ class DemoSeeder extends Seeder
             // (idempotent — findOrCreate theo team = branch_id).
             RolePermissionSeeder::class,
             BranchUserSeeder::class,
-            LeadSeeder::class,
+            CustomerSeeder::class,
             ContactSeeder::class,
             ActivitySeeder::class,
             TaskSeeder::class,

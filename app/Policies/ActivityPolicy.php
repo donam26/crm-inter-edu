@@ -3,7 +3,7 @@
 namespace App\Policies;
 
 use App\Models\Activity;
-use App\Models\Lead;
+use App\Models\Customer;
 use App\Models\User;
 use App\Policies\Concerns\ChecksBranchOwnership;
 
@@ -18,31 +18,31 @@ class ActivityPolicy
 
     public function view(User $user, Activity $activity): bool
     {
-        // Truy cập activity đi theo quyền truy cập Lead cha (own/all qua leads.view-all).
+        // Truy cập activity đi theo quyền truy cập Customer cha (own/all qua customers.view-all).
         return $user->can('activities.view')
-            && app(LeadPolicy::class)->view($user, $activity->lead);
+            && app(CustomerPolicy::class)->view($user, $activity->customer);
     }
 
-    public function create(User $user, ?Lead $lead = null): bool
+    public function create(User $user, ?Customer $customer = null): bool
     {
         if (! $user->can('activities.create')) {
             return false;
         }
 
-        return $lead instanceof Lead
-            ? app(LeadPolicy::class)->update($user, $lead)
+        return $customer instanceof Customer
+            ? app(CustomerPolicy::class)->update($user, $customer)
             : true;
     }
 
     public function update(User $user, Activity $activity): bool
     {
         return $user->can('activities.update')
-            && app(LeadPolicy::class)->update($user, $activity->lead);
+            && app(CustomerPolicy::class)->update($user, $activity->customer);
     }
 
     public function delete(User $user, Activity $activity): bool
     {
         return $user->can('activities.delete')
-            && app(LeadPolicy::class)->update($user, $activity->lead);
+            && app(CustomerPolicy::class)->update($user, $activity->customer);
     }
 }

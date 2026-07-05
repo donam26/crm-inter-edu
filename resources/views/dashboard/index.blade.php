@@ -9,11 +9,11 @@
 
     {{-- Stat cards --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <x-stat-card label="Tổng số Lead" :value="$stats['total_leads']" icon="leads" variant="brand" />
+        <x-stat-card label="Tổng số khách hàng" :value="$stats['total_customers']" icon="customers" variant="brand" />
         <x-stat-card label="Tổng số Contact" :value="$stats['total_contacts']" icon="users" variant="brand" />
         <x-stat-card label="Hoạt động 7 ngày qua" :value="$stats['activities_last_7_days']" icon="chart" variant="neutral" />
         @can('branches.view')
-            <x-stat-card label="Số chi nhánh có Lead" :value="count($stats['leads_by_branch'] ?? [])" icon="building" variant="neutral" />
+            <x-stat-card label="Số chi nhánh có khách hàng" :value="count($stats['customers_by_branch'] ?? [])" icon="building" variant="neutral" />
         @endcan
     </div>
 
@@ -47,10 +47,10 @@
 
     {{-- Breakdown panels --}}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <x-card title="Lead theo trạng thái">
-            @forelse ($stats['leads_by_status'] as $status => $count)
+        <x-card title="Khách hàng theo trạng thái">
+            @forelse ($stats['customers_by_status'] as $status => $count)
                 <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                    <x-badge variant="primary">{{ \App\Enums\LeadStatus::tryFrom($status)?->label() ?? $status }}</x-badge>
+                    <x-badge variant="primary">{{ \App\Enums\CustomerStatus::tryFrom($status)?->label() ?? $status }}</x-badge>
                     <span class="font-medium tabular-nums">{{ $count }}</span>
                 </div>
             @empty
@@ -59,8 +59,8 @@
         </x-card>
 
         @can('branches.view')
-            <x-card title="Lead theo chi nhánh">
-                @forelse ($stats['leads_by_branch'] ?? [] as $branchId => $count)
+            <x-card title="Khách hàng theo chi nhánh">
+                @forelse ($stats['customers_by_branch'] ?? [] as $branchId => $count)
                     <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
                         <span>{{ $branches[$branchId]->name ?? 'Branch #'.$branchId }}</span>
                         <span class="font-medium tabular-nums">{{ $count }}</span>
@@ -91,8 +91,8 @@
                                 class="font-medium text-brand-600 hover:underline">{{ $task->title }}</a>
                             <div class="text-xs text-gray-500 mt-0.5">
                                 {{ $task->due_at?->format('d/m/Y H:i') }}
-                                @if ($task->lead)
-                                    · {{ $task->lead->school_name }}
+                                @if ($task->customer)
+                                    · {{ $task->customer->name }}
                                 @endif
                             </div>
                         </div>
@@ -121,8 +121,8 @@
                                 class="font-medium text-brand-600 hover:underline">{{ $task->title }}</a>
                             <div class="text-xs text-gray-500 mt-0.5">
                                 {{ $task->due_at?->format('d/m/Y H:i') }}
-                                @if ($task->lead)
-                                    · {{ $task->lead->school_name }}
+                                @if ($task->customer)
+                                    · {{ $task->customer->name }}
                                 @endif
                             </div>
                         </div>
@@ -160,8 +160,8 @@
                                 @if ($ev->is_online)
                                     <x-badge variant="primary">Online</x-badge>
                                 @endif
-                                @if ($ev->lead)
-                                    <span>· {{ $ev->lead->school_name }}</span>
+                                @if ($ev->customer)
+                                    <span>· {{ $ev->customer->name }}</span>
                                 @endif
                             </div>
                         </div>
