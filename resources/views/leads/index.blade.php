@@ -1,11 +1,11 @@
-<x-layouts.app title="Leads" :breadcrumbs="[
+<x-layouts.app title="Khách hàng tiềm năng" :breadcrumbs="[
     ['label' => 'Dashboard', 'url' => route('dashboard')],
-    ['label' => 'Leads'],
+    ['label' => 'Khách hàng tiềm năng'],
 ]">
-    <x-page-header title="Danh sách Lead">
+    <x-page-header title="Danh sách khách hàng tiềm năng">
         @can('create', App\Models\Lead::class)
-            <x-button variant="primary" data-modal-form="{{ route('leads.create') }}" data-modal-title="Thêm Lead">
-                <x-icon name="plus" class="h-4 w-4" /> Thêm Lead
+            <x-button variant="primary" data-modal-form="{{ route('leads.create') }}" data-modal-title="Thêm khách hàng tiềm năng">
+                <x-icon name="plus" class="h-4 w-4" /> Thêm khách hàng tiềm năng
             </x-button>
         @endcan
     </x-page-header>
@@ -66,7 +66,7 @@
                 </td>
             </tr>
         @empty
-            <x-table.empty :colspan="$isSuperAdmin ? 6 : 5" message="Chưa có lead nào." icon="leads" />
+            <x-table.empty :colspan="$isSuperAdmin ? 6 : 5" message="Chưa có khách hàng tiềm năng nào." icon="leads" />
         @endforelse
     </x-table>
 

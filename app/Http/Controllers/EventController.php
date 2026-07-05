@@ -217,8 +217,10 @@ class EventController extends Controller
     }
 
     /**
-     * User cùng branch (sales / branch-manager) — danh sách candidate cho
-     * organizer + attendees.
+     * Mọi user CÙNG branch — danh sách candidate cho organizer + attendees
+     * (không giới hạn theo vai trò; ràng buộc branch do EventService kiểm:
+     * organizer/attendee phải có branch_id và, trừ super-admin, cùng branch
+     * người tạo). Super-admin: mọi user đã thuộc một chi nhánh.
      */
     private function branchUsers(?User $user, ?int $forceBranchId = null)
     {
@@ -230,7 +232,7 @@ class EventController extends Controller
 
         if ($user->hasRole('super-admin') && $branchId === null) {
             return User::query()
-                ->whereHas('roles', fn ($q) => $q->whereIn('name', ['sales', 'branch-manager']))
+                ->whereNotNull('branch_id')
                 ->orderBy('name')
                 ->get();
         }
@@ -241,7 +243,6 @@ class EventController extends Controller
 
         return User::query()
             ->where('branch_id', $branchId)
-            ->whereHas('roles', fn ($q) => $q->whereIn('name', ['sales', 'branch-manager']))
             ->orderBy('name')
             ->get();
     }

@@ -6,8 +6,10 @@ use App\Exceptions\BranchHasDependenciesException;
 use App\Models\Branch;
 use App\Models\User;
 use App\Services\BranchService;
+use App\Support\PermissionCatalog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Permission;
 use Tests\TestCase;
 
 /**
@@ -31,6 +33,13 @@ class BranchServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+
+        // BranchService::create cấp sẵn role branch-manager/sales cho chi nhánh
+        // mới → cần permission catalog tồn tại (đúng như production đã seed).
+        foreach (PermissionCatalog::all() as $permission) {
+            Permission::findOrCreate($permission, 'web');
+        }
+
         $this->service = new BranchService;
     }
 

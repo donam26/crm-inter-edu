@@ -1,12 +1,12 @@
-<x-layouts.app title="Chi tiết Lead" :breadcrumbs="[
+<x-layouts.app title="Chi tiết khách hàng tiềm năng" :breadcrumbs="[
     ['label' => 'Dashboard', 'url' => route('dashboard')],
-    ['label' => 'Leads', 'url' => route('leads.index')],
+    ['label' => 'Khách hàng tiềm năng', 'url' => route('leads.index')],
     ['label' => $lead->school_name],
 ]">
     <div class="max-w-3xl">
         <x-page-header :title="$lead->school_name">
             @can('update', $lead)
-                <x-button variant="secondary" data-modal-form="{{ route('leads.edit', $lead) }}" data-modal-title="Sửa Lead">Sửa</x-button>
+                <x-button variant="secondary" data-modal-form="{{ route('leads.edit', $lead) }}" data-modal-title="Sửa khách hàng tiềm năng">Sửa</x-button>
             @endcan
             @can('delete', $lead)
                 <form method="POST" action="{{ route('leads.destroy', $lead) }}" onsubmit="return confirm('Xóa lead này?');" class="inline">

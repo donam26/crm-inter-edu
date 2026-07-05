@@ -9,28 +9,23 @@ class DatabaseSeeder extends Seeder
     /**
      * Seed the application's database.
      *
-     * Order matters (multi-tenant teams):
-     *  1. BranchSeeder — branches là tenant, cần có trước để seed role theo branch.
-     *  2. RolePermissionSeeder — tạo permission + role super-admin (global) và
-     *     branch-manager/sales cho từng branch (team = branch_id).
-     *  3. SuperAdminSeeder — super-admin (branch_id=null) nhận role super-admin.
-     *  4. BranchUserSeeder — user demo (manager/sales) cho mỗi branch.
-     *  5. Các seeder nghiệp vụ.
+     * Tách 2 tầng để `db:seed` an toàn trên production:
+     *  - THIẾT YẾU (mọi môi trường): permission + role super-admin toàn cục +
+     *    tài khoản super-admin. RolePermissionSeeder cũng tạo role cho các chi
+     *    nhánh đang có (fresh prod chưa có chi nhánh → chỉ tạo phần toàn cục;
+     *    role của chi nhánh mới do BranchService cấp khi tạo qua UI).
+     *  - DEMO (chỉ local): chi nhánh/người dùng/lead/deal... mẫu. KHÔNG bao giờ
+     *    lên production — nếu lỡ có, dọn bằng `php artisan demo:purge`.
      */
     public function run(): void
     {
         $this->call([
-            BranchSeeder::class,
             RolePermissionSeeder::class,
             SuperAdminSeeder::class,
-            BranchUserSeeder::class,
-            LeadSeeder::class,
-            ContactSeeder::class,
-            ActivitySeeder::class,
-            TaskSeeder::class,
-            EventSeeder::class,
-            ProductSeeder::class,
-            DealSeeder::class,
         ]);
+
+        if (app()->environment('local')) {
+            $this->call(DemoSeeder::class);
+        }
     }
 }

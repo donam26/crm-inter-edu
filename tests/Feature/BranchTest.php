@@ -3,8 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\Branch;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\InteractsWithRbac;
 use Tests\TestCase;
 
@@ -81,6 +83,35 @@ class BranchTest extends TestCase
         $this->assertDatabaseHas('branches', ['code' => 'BR-HN01', 'name' => 'Hà Nội Campus']);
         $created = Branch::where('code', 'BR-HN01')->firstOrFail();
         $response->assertRedirect(route('branches.show', $created));
+    }
+
+    public function test_store_provisions_default_system_roles_for_new_branch(): void
+    {
+        $admin = $this->makeUser('super-admin');
+
+        $this->actingAs($admin)
+            ->post(route('branches.store'), [
+                'name' => 'Đà Nẵng Campus',
+                'code' => 'BR-DN01',
+                'is_active' => true,
+            ]);
+
+        $branch = Branch::where('code', 'BR-DN01')->firstOrFail();
+
+        // Chi nhánh mới phải có sẵn branch-manager + sales (is_system) đúng branch,
+        // giống các chi nhánh seed sẵn — nếu không, màn hình Vai trò / gán người
+        // dùng của chi nhánh này sẽ trống.
+        $this->assertDatabaseHas('roles', [
+            'name' => 'branch-manager', 'branch_id' => $branch->id, 'is_system' => true,
+        ]);
+        $this->assertDatabaseHas('roles', [
+            'name' => 'sales', 'branch_id' => $branch->id, 'is_system' => true,
+        ]);
+
+        // Role được cấp quyền, không phải role rỗng.
+        app(PermissionRegistrar::class)->setPermissionsTeamId($branch->id);
+        $manager = Role::where('name', 'branch-manager')->where('branch_id', $branch->id)->firstOrFail();
+        $this->assertGreaterThan(0, $manager->permissions()->count());
     }
 
     public function test_super_admin_can_update_branch(): void

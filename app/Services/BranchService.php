@@ -9,8 +9,12 @@ use App\Models\Invoice;
 use App\Models\Lead;
 use App\Models\Payment;
 use App\Models\Product;
+use App\Models\Role;
+use App\Support\PermissionCatalog;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Spatie\Permission\PermissionRegistrar;
 
 class BranchService
 {
@@ -37,7 +41,43 @@ class BranchService
 
     public function create(array $data): Branch
     {
-        return DB::transaction(fn () => Branch::create($data));
+        return DB::transaction(function () use ($data) {
+            $branch = Branch::create($data);
+
+            // Cấp bộ vai trò hệ thống mặc định cho chi nhánh mới để nó hoạt động
+            // như các chi nhánh seed sẵn ở màn hình Vai trò / gán người dùng.
+            // Thiếu bước này, chi nhánh tạo qua UI sẽ không có vai trò nào.
+            $this->provisionSystemRoles($branch);
+
+            return $branch;
+        });
+    }
+
+    /**
+     * Tạo bộ vai trò hệ thống mặc định (branch-manager + sales) cho một chi
+     * nhánh, giống RolePermissionSeeder. Đóng dấu team context = branch->id để
+     * Spatie gán role đúng branch, rồi khôi phục team context của request.
+     * Idempotent nhờ Role::findOrCreate.
+     */
+    private function provisionSystemRoles(Branch $branch): void
+    {
+        $registrar = app(PermissionRegistrar::class);
+        $previousTeamId = $registrar->getPermissionsTeamId();
+
+        try {
+            $registrar->setPermissionsTeamId($branch->id);
+
+            $manager = Role::findOrCreate('branch-manager', 'web');
+            $manager->forceFill(['is_system' => true])->save();
+            $manager->syncPermissions(PermissionCatalog::branchAssignable());
+
+            $sales = Role::findOrCreate('sales', 'web');
+            $sales->forceFill(['is_system' => true])->save();
+            $sales->syncPermissions(RolePermissionSeeder::salesPermissions());
+        } finally {
+            $registrar->setPermissionsTeamId($previousTeamId);
+            $registrar->forgetCachedPermissions();
+        }
     }
 
     public function update(Branch $branch, array $data): Branch
