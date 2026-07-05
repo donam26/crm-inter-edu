@@ -167,7 +167,7 @@
                         @endif
                         <div class="flex justify-between gap-2"><span class="text-gray-500">Chi nhánh</span><span class="text-gray-800">{{ $task->branch?->name }}</span></div>
                         @if ($task->customer)
-                            <div class="flex justify-between gap-2"><span class="text-gray-500">Khách hàng</span>
+                            <div class="flex justify-between gap-2"><span class="text-gray-500">Lead</span>
                                 <a href="{{ route('customers.show', $task->customer) }}" class="text-brand-600 hover:underline text-right">{{ $task->customer->name }}</a>
                             </div>
                         @endif

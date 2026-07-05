@@ -1,15 +1,15 @@
-<x-layouts.app title="Chi tiết khách hàng" :breadcrumbs="[
+<x-layouts.app title="Chi tiết lead" :breadcrumbs="[
     ['label' => 'Dashboard', 'url' => route('dashboard')],
-    ['label' => 'Khách hàng', 'url' => route('customers.index')],
+    ['label' => 'Lead', 'url' => route('customers.index')],
     ['label' => $customer->name],
 ]">
     <div class="max-w-3xl">
         <x-page-header :title="$customer->name">
             @can('update', $customer)
-                <x-button variant="secondary" data-modal-form="{{ route('customers.edit', $customer) }}" data-modal-title="Sửa khách hàng">Sửa</x-button>
+                <x-button variant="secondary" data-modal-form="{{ route('customers.edit', $customer) }}" data-modal-title="Sửa lead">Sửa</x-button>
             @endcan
             @can('delete', $customer)
-                <form method="POST" action="{{ route('customers.destroy', $customer) }}" onsubmit="return confirm('Xóa khách hàng này?');" class="inline">
+                <form method="POST" action="{{ route('customers.destroy', $customer) }}" onsubmit="return confirm('Xóa lead này?');" class="inline">
                     @csrf
                     @method('DELETE')
                     <x-button type="submit" variant="danger">Xóa</x-button>
@@ -17,11 +17,11 @@
             @endcan
         </x-page-header>
 
-        {{-- Thông tin khách hàng --}}
+        {{-- Thông tin lead --}}
         <x-card>
             <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4 text-sm">
                 <div>
-                    <dt class="text-gray-500">Tên khách hàng</dt>
+                    <dt class="text-gray-500">Tên lead</dt>
                     <dd class="font-medium text-gray-900 mt-0.5">{{ $customer->name }}</dd>
                 </div>
                 <div>
@@ -111,13 +111,13 @@
                     </x-slot:actions>
                 @endcan
                 @php
-                    $leadTasks = $customer->tasks()
+                    $customerTasks = $customer->tasks()
                         ->with('assignee')
                         ->orderByRaw("CASE WHEN status IN ('pending','in_progress') THEN 0 ELSE 1 END")
                         ->orderBy('due_at')
                         ->get();
                 @endphp
-                @forelse ($leadTasks as $task)
+                @forelse ($customerTasks as $task)
                     <div class="flex items-center justify-between border-b border-gray-100 py-2 last:border-0 text-sm">
                         <div class="min-w-0">
                             <a href="{{ route('tasks.show', $task) }}"
@@ -160,9 +160,9 @@
                     </x-slot:actions>
                 @endcan
                 @php
-                    $leadEvents = $customer->events()->with('organizer')->orderBy('starts_at')->get();
+                    $customerEvents = $customer->events()->with('organizer')->orderBy('starts_at')->get();
                 @endphp
-                @forelse ($leadEvents as $ev)
+                @forelse ($customerEvents as $ev)
                     <div class="flex items-center justify-between border-b border-gray-100 py-2 last:border-0 text-sm">
                         <div class="min-w-0">
                             <a href="{{ route('events.show', $ev) }}"
@@ -205,7 +205,7 @@
                         <div class="font-semibold tabular-nums">{{ number_format($customer->deal->total_amount) }} đ</div>
                     </div>
                 @else
-                    <x-empty-state message="Chưa có deal cho khách hàng này." icon="deals" />
+                    <x-empty-state message="Chưa có deal cho lead này." icon="deals" />
                 @endif
             </x-card>
         @endif

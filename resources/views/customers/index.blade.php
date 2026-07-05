@@ -1,11 +1,11 @@
-<x-layouts.app title="Khách hàng" :breadcrumbs="[
+<x-layouts.app title="Lead" :breadcrumbs="[
     ['label' => 'Dashboard', 'url' => route('dashboard')],
-    ['label' => 'Khách hàng'],
+    ['label' => 'Lead'],
 ]">
-    <x-page-header title="Danh sách khách hàng">
+    <x-page-header title="Danh sách lead">
         @can('create', App\Models\Customer::class)
-            <x-button variant="primary" data-modal-form="{{ route('customers.create') }}" data-modal-title="Thêm khách hàng">
-                <x-icon name="plus" class="h-4 w-4" /> Thêm khách hàng
+            <x-button variant="primary" data-modal-form="{{ route('customers.create') }}" data-modal-title="Thêm lead">
+                <x-icon name="plus" class="h-4 w-4" /> Thêm lead
             </x-button>
         @endcan
     </x-page-header>
@@ -39,8 +39,8 @@
     @php $isSuperAdmin = auth()->user()?->hasRole('super-admin'); @endphp
 
     <x-table :headers="$isSuperAdmin
-        ? ['Khách hàng', 'Điện thoại', 'Trạng thái', 'Người phụ trách', 'Chi nhánh', '']
-        : ['Khách hàng', 'Điện thoại', 'Trạng thái', 'Người phụ trách', '']">
+        ? ['Lead', 'Điện thoại', 'Trạng thái', 'Người phụ trách', 'Chi nhánh', '']
+        : ['Lead', 'Điện thoại', 'Trạng thái', 'Người phụ trách', '']">
         @forelse ($customers as $customer)
             <tr>
                 <td class="px-4 py-3">
@@ -59,7 +59,7 @@
                 </td>
             </tr>
         @empty
-            <x-table.empty :colspan="$isSuperAdmin ? 6 : 5" message="Chưa có khách hàng nào." icon="customers" />
+            <x-table.empty :colspan="$isSuperAdmin ? 6 : 5" message="Chưa có lead nào." icon="customers" />
         @endforelse
     </x-table>
 

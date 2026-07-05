@@ -72,7 +72,7 @@ class CustomerController extends Controller
     {
         $customer = $this->service->create($request->validated());
 
-        return $this->modalRedirect(route('customers.show', $customer), 'Đã tạo khách hàng.');
+        return $this->modalRedirect(route('customers.show', $customer), 'Đã tạo lead.');
     }
 
     public function show(Customer $customer)
@@ -105,7 +105,7 @@ class CustomerController extends Controller
     {
         $this->service->update($customer, $request->validated());
 
-        return $this->modalRedirect(route('customers.show', $customer), 'Đã cập nhật khách hàng.');
+        return $this->modalRedirect(route('customers.show', $customer), 'Đã cập nhật lead.');
     }
 
     public function destroy(Customer $customer)
@@ -114,7 +114,7 @@ class CustomerController extends Controller
         $this->service->delete($customer);
 
         return redirect()->route('customers.index')
-            ->with('success', 'Đã xóa khách hàng.');
+            ->with('success', 'Đã xóa lead.');
     }
 
     public function assign(Request $request, Customer $customer)

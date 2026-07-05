@@ -41,7 +41,7 @@
                     <dd class="mt-0.5"><x-badge :variant="$deal->stage?->badgeVariant() ?? 'secondary'">{{ $deal->stage?->label() }}</x-badge></dd>
                 </div>
                 <div>
-                    <dt class="text-gray-500">Khách hàng</dt>
+                    <dt class="text-gray-500">Lead</dt>
                     <dd class="mt-0.5">
                         <a href="{{ route('customers.show', $deal->customer) }}" class="text-brand-600 hover:underline">{{ $deal->customer?->name }}</a>
                     </dd>

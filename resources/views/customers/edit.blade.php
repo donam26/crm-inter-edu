@@ -3,7 +3,7 @@
     @csrf
     @method('PUT')
 
-    <x-input name="name" label="Tên khách hàng" :value="$customer->name" required />
+    <x-input name="name" label="Tên lead" :value="$customer->name" required />
 
     <x-input name="phone" label="Điện thoại" :value="old('phone', $customer->phone)" />
     <x-input name="email" label="Email" type="email" :value="old('email', $customer->email)" />

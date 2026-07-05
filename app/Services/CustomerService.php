@@ -47,7 +47,7 @@ class CustomerService
             // Chặn override branch_id qua input người dùng.
             unset($data['branch_id']);
 
-            // Người phụ trách mới (nếu có gửi lên) phải cùng chi nhánh với khách hàng.
+            // Người phụ trách mới (nếu có gửi lên) phải cùng chi nhánh với lead.
             if (array_key_exists('assigned_user_id', $data)) {
                 $this->guardAssigneeBranch($data['assigned_user_id'], $customer->branch_id);
             }
@@ -88,7 +88,7 @@ class CustomerService
 
         if (! $assignee || (int) $assignee->branch_id !== (int) $branchId) {
             throw ValidationException::withMessages([
-                'assigned_user_id' => 'Người được assign phải thuộc cùng chi nhánh với khách hàng.',
+                'assigned_user_id' => 'Người được assign phải thuộc cùng chi nhánh với lead.',
             ]);
         }
     }

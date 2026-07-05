@@ -24,7 +24,7 @@
 >
     @csrf
 
-    <x-input name="name" label="Tên khách hàng" required />
+    <x-input name="name" label="Tên lead" required />
 
     @if ($isSuperAdmin)
         <x-select name="branch_id" label="Chi nhánh" placeholder="— Chọn chi nhánh —" required x-model="branchId">

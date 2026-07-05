@@ -48,7 +48,7 @@
     <x-select name="customer_id" label="Customer liên quan" placeholder="— Không gắn Customer —">
         @foreach ($customers as $customer)
             <option value="{{ $customer->id }}"
-                @selected((string) old('customer_id', $preselectedLeadId) === (string) $customer->id)>
+                @selected((string) old('customer_id', $preselectedCustomerId) === (string) $customer->id)>
                 {{ $customer->name }}
             </option>
         @endforeach

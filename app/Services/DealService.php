@@ -59,7 +59,7 @@ class DealService
             // Enforce 1-Customer-1-Deal ở Service-layer (DB unique là hàng rào cuối).
             if (Deal::withoutGlobalScopes()->where('customer_id', $customer->id)->exists()) {
                 throw ValidationException::withMessages([
-                    'customer_id' => 'Khách hàng này đã có deal. Mỗi khách hàng chỉ có 1 deal.',
+                    'customer_id' => 'Lead này đã có deal. Mỗi lead chỉ có 1 deal.',
                 ]);
             }
 
@@ -69,7 +69,7 @@ class DealService
                 $owner = User::find($ownerId);
                 if (! $owner || (int) $owner->branch_id !== (int) $customer->branch_id) {
                     throw ValidationException::withMessages([
-                        'owner_user_id' => 'Người phụ trách phải thuộc cùng chi nhánh với khách hàng.',
+                        'owner_user_id' => 'Người phụ trách phải thuộc cùng chi nhánh với lead.',
                     ]);
                 }
             }
@@ -383,7 +383,7 @@ class DealService
         }
         if ((int) $authUser->branch_id !== (int) $customer->branch_id) {
             throw ValidationException::withMessages([
-                'customer_id' => 'Khách hàng không thuộc chi nhánh của bạn.',
+                'customer_id' => 'Lead không thuộc chi nhánh của bạn.',
             ]);
         }
     }

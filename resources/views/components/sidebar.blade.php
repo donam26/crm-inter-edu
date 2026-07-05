@@ -29,7 +29,7 @@
         @can('customers.view')
             @if (Route::has('customers.index'))
                 <x-nav-link :href="route('customers.index')" icon="customers" :active="request()->routeIs('customers.*')">
-                    Khách hàng
+                    Lead
                 </x-nav-link>
             @endif
         @endcan

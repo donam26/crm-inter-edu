@@ -27,7 +27,7 @@
         </form>
     </x-card>
 
-    <x-table :headers="['Mã', 'Khách hàng', 'Tổng', 'Đã thu', 'Trạng thái', 'Phát hành', 'Hạn', '']">
+    <x-table :headers="['Mã', 'Lead', 'Tổng', 'Đã thu', 'Trạng thái', 'Phát hành', 'Hạn', '']">
         @forelse ($invoices as $inv)
             <tr>
                 <td class="px-4 py-3">

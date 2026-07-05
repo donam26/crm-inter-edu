@@ -36,7 +36,7 @@
         </form>
     </x-card>
 
-    <x-table :headers="['Mã', 'Tiêu đề', 'Khách hàng', 'Stage', 'Giá trị', 'Phụ trách', '']">
+    <x-table :headers="['Mã', 'Tiêu đề', 'Lead', 'Stage', 'Giá trị', 'Phụ trách', '']">
         @forelse ($deals as $d)
             <tr>
                 <td class="px-4 py-3">

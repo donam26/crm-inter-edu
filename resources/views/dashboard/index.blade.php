@@ -9,11 +9,11 @@
 
     {{-- Stat cards --}}
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <x-stat-card label="Tổng số khách hàng" :value="$stats['total_customers']" icon="customers" variant="brand" />
+        <x-stat-card label="Tổng số lead" :value="$stats['total_customers']" icon="customers" variant="brand" />
         <x-stat-card label="Tổng số Contact" :value="$stats['total_contacts']" icon="users" variant="brand" />
         <x-stat-card label="Hoạt động 7 ngày qua" :value="$stats['activities_last_7_days']" icon="chart" variant="neutral" />
         @can('branches.view')
-            <x-stat-card label="Số chi nhánh có khách hàng" :value="count($stats['customers_by_branch'] ?? [])" icon="building" variant="neutral" />
+            <x-stat-card label="Số chi nhánh có lead" :value="count($stats['customers_by_branch'] ?? [])" icon="building" variant="neutral" />
         @endcan
     </div>
 
@@ -47,7 +47,7 @@
 
     {{-- Breakdown panels --}}
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <x-card title="Khách hàng theo trạng thái">
+        <x-card title="Lead theo trạng thái">
             @forelse ($stats['customers_by_status'] as $status => $count)
                 <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
                     <x-badge variant="primary">{{ \App\Enums\CustomerStatus::tryFrom($status)?->label() ?? $status }}</x-badge>
@@ -59,7 +59,7 @@
         </x-card>
 
         @can('branches.view')
-            <x-card title="Khách hàng theo chi nhánh">
+            <x-card title="Lead theo chi nhánh">
                 @forelse ($stats['customers_by_branch'] ?? [] as $branchId => $count)
                     <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
                         <span>{{ $branches[$branchId]->name ?? 'Branch #'.$branchId }}</span>

@@ -15,7 +15,7 @@
                 </a>
                 @if ($task->customer)
                     <div class="text-xs text-gray-500 mt-0.5">
-                        Khách hàng:
+                        Lead:
                         <a href="{{ route('customers.show', $task->customer) }}" class="hover:underline">
                             {{ $task->customer->name }}
                         </a>

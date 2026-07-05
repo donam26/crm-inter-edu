@@ -30,14 +30,14 @@ class PermissionCatalog
                 ],
             ],
             'customers' => [
-                'label' => 'Khách hàng',
+                'label' => 'Lead',
                 'permissions' => [
-                    'customers.view' => 'Xem khách hàng',
-                    'customers.view-all' => 'Xem mọi khách hàng trong chi nhánh',
-                    'customers.create' => 'Tạo khách hàng',
-                    'customers.update' => 'Sửa khách hàng',
-                    'customers.delete' => 'Xóa khách hàng',
-                    'customers.assign' => 'Phân công khách hàng',
+                    'customers.view' => 'Xem lead',
+                    'customers.view-all' => 'Xem mọi lead trong chi nhánh',
+                    'customers.create' => 'Tạo lead',
+                    'customers.update' => 'Sửa lead',
+                    'customers.delete' => 'Xóa lead',
+                    'customers.assign' => 'Phân công lead',
                 ],
             ],
             'contacts' => [
